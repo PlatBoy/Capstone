@@ -2,6 +2,7 @@ import os
 import random
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from twilio.rest import Client
 
@@ -35,7 +36,11 @@ class VerificationRequest(BaseModel):
 
 @app.get("/")
 def read_root():
-    return {"status": "KrishiSense API is live and running!"}
+    """Serve index.html or API status"""
+    try:
+        return FileResponse("index.html", media_type="text/html")
+    except:
+        return {"status": "KrishiSense API is live and running!"}
 
 @app.post("/api/auth/request-otp")
 async def request_otp(payload: HandshakeRequest):
@@ -99,3 +104,18 @@ async def verify_otp(payload: VerificationRequest):
         }
     
     raise HTTPException(status_code=400, detail="Security token mismatch or expired lifetime.")
+
+# Fallback route for SPA frontend
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    """Serve index.html for frontend routing"""
+    if full_path.startswith("api/"):
+        return {"error": "Route not found"}
+    try:
+        return FileResponse("index.html", media_type="text/html")
+    except:
+        return {"error": "Frontend not available"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=3000)
