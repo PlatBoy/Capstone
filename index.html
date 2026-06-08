@@ -3,169 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KrishiSense - Agronomic Engine</title>
+    <title>KrishiSense Dashboard</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f3f4f6; margin: 0; padding: 20px; }
-        .screen { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+        .screen { display: none; }
         .screen.active { display: block; }
-        .dark-theme { background-color: #1f2937; color: white; }
-        input, select, button { display: block; width: 100%; margin: 10px 0; padding: 10px; }
-        .diag-badge { padding: 5px 10px; border-radius: 4px; font-weight: bold; }
-        .status-healthy { background: #dcfce7; color: #166534; }
-        .status-warning { background: #fef9c3; color: #854d0e; }
-        .status-danger { background: #fee2e2; color: #991b1b; }
+        body { font-family: sans-serif; padding: 20px; max-width: 400px; margin: auto; }
+        input, button { display: block; margin: 10px 0; padding: 12px; width: 100%; box-sizing: border-box; }
+        button { cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
     </style>
 </head>
 <body>
 
     <div id="screen-auth-gateway" class="screen active">
-        <h1 id="authDisplayTitle">Farmer Login</h1>
-        <p id="authDisplayDesc">Access your predictive agronomic dashboard</p>
+        <h1>Farmer Login</h1>
         <form id="authForm" onsubmit="executeAuthAction(event)">
-            <label id="usernameFieldLabel">Mobile Number / Admin ID</label>
-            <input type="text" id="authUsername" required placeholder="e.g. 9876543210">
-            <input type="password" id="authPassword" required placeholder="Password">
-            <div id="registrationNameField" style="display:none;">
-                <input type="text" id="authFullName" placeholder="Full Name">
-            </div>
-            <button id="authSubmitBtn" type="submit">🔓 Request 2FA OTP Secure Token</button>
+            <input type="text" id="authUsername" placeholder="Mobile Number" required>
+            <input type="password" id="authPassword" placeholder="Password" required>
+            <button type="submit" id="authSubmitBtn">Request OTP</button>
         </form>
-        <form id="otpVerificationForm" style="display:none;" onsubmit="validateSecurityOTP(event)">
-            <p id="otpSimulationText"></p>
-            <input type="text" id="otpInputField" required placeholder="Enter 6-digit OTP">
-            <button type="submit">Verify OTP</button>
-        </form>
-        <a href="#" id="authToggleModeLink" onclick="toggleAuthPortalMode()">Need an account? Register Plot Hub</a>
     </div>
 
     <div id="appMainContainer" class="screen">
-        <div id="appProgressBar" style="display:none;">System Active</div>
-        <button id="logoutBtn" onclick="terminateSession()">Logout</button>
-        <button id="adminToggleViewBtn" onclick="toggleAdminViewMode()">View Console</button>
-        <button id="themeToggleBtn" onclick="toggleAppTheme()">🌙</button>
-        
-        <div id="screen-upload" class="screen active">
-            <h2>Upload Crop Image</h2>
-            <div id="uploadDropZone">
-                <input type="file" id="imgInput" onchange="handleImageFile(event)">
-            </div>
-            <select id="cropSelect"><option>Wheat</option><option>Rice</option><option>Sugarcane</option><option>Cotton</option></select>
-            <select id="regionSelect"><option>Zone A</option><option>Zone B</option></select>
-            <select id="soilSelect"><option>Clay</option><option>Loam</option><option>Sandy</option></select>
-            <input type="number" id="farmSizeInput" placeholder="Acres">
-            <div id="previewContainer" style="display:none;">
-                <img id="imagePreview" style="max-width:200px;">
-                <button onclick="initiateAnalysis()">Analyze</button>
-            </div>
-        </div>
-
-        <div id="screen-process" class="screen">
-            <h2 id="processTitle">Analyzing...</h2>
-            <p id="processSub"></p>
-        </div>
-
-        <div id="screen-results" class="screen">
-            <h2 id="diagCropRegionHeader"></h2>
-            <span id="diagStatusBadge"></span>
-            <p id="diagDesc"></p>
-            <div id="y_perAcre"></div>
-            <div id="y_total"></div>
-            <div id="y_rev"></div>
-            <p id="y_desc"></p>
-            <div id="w_temp"></div>
-            <div id="w_desc"></div>
-            <div id="w_humidity"></div>
-            <ul id="recContainer"></ul>
-            <p id="mktDesc"></p>
-            <div id="mktListContainer"></div>
-            <canvas id="mktChart"></canvas>
-            <button onclick="returnToScanScreen()">Back</button>
-        </div>
-
-        <div id="screen-admin-dashboard" class="screen">
-            <h2>Admin Dashboard</h2>
-            <div id="admMetricUsers"></div>
-            <div id="admMetricScans"></div>
-            <table id="adminUserTableBody"></table>
-            <table id="adminLogsTableBody"></table>
-            <ul id="historyListContainer"></ul>
-            <button id="btnClearHistory" onclick="clearCachedScans()">Clear History</button>
-        </div>
+        <h2>Dashboard</h2>
+        <p>Login Successful!</p>
+        <button onclick="location.reload()">Logout</button>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
-        // --- 1. GLOBAL SCOPE (Functions here are visible to buttons) ---
-        
-        class HandshakeRequest {
-            constructor(username, password, fullName, mode) {
-                this.username = username;
-                this.password = password;
-                this.fullName = fullName;
-                this.mode = mode;
-            }
-        }
-
-        const BACKEND_URL = ""; 
-        const LOCAL_STORAGE_HISTORY_KEY = 'krishiSenseHistoryLog';
-        const LOCAL_STORAGE_SESSION_KEY = 'krishiSenseUserSession';
-        const LOCAL_STORAGE_USERS_KEY = 'krishiSenseRegisteredUsers';
-        const LOCAL_STORAGE_GLOBAL_LOGS_KEY = 'krishiSenseGlobalLogsSystem';
-
-        let currentAuthMode = 'login'; 
-        let currentAdminViewActiveMode = 'app'; 
-        let imageBase64Payload = null; 
-        let chartObjectInstance = null;
-        let activeAuthPendingUsername = null;
-
-        function getApiUrl(endpoint) {
-            const base = BACKEND_URL.trim() ? BACKEND_URL.trim().replace(/\/$/, "") : window.location.origin;
-            return `${base}${endpoint}`;
-        }
-
-        function executeAuthAction(e) {
+        async function executeAuthAction(e) {
             e.preventDefault();
-            console.log("Auth Triggered");
-            // ... [Insert all your previous logic here]
-        }
+            const username = document.getElementById('authUsername').value;
+            const password = document.getElementById('authPassword').value;
+            const btn = document.getElementById('authSubmitBtn');
 
-        function toggleAuthPortalMode() {
-            // ... [Insert logic here]
-        }
-
-        function validateSecurityOTP(e) {
-            e.preventDefault();
-            // ... [Insert logic here]
-        }
-
-        function handleImageFile(e) { /* ... */ }
-        function initiateAnalysis() { /* ... */ }
-        function terminateSession() { /* ... */ }
-        function toggleAdminViewMode() { /* ... */ }
-        function toggleAppTheme() { /* ... */ }
-        function clearCachedScans() { /* ... */ }
-        function returnToScanScreen() { /* ... */ }
-        
-        // ... (Paste the rest of your core logic functions here)
-
-        // --- 2. INITIALIZATION (Runs once on load) ---
-        document.addEventListener("DOMContentLoaded", () => {
-            console.log("App Initialized");
-
-            // Setup default storage if empty
-            if (!localStorage.getItem(LOCAL_STORAGE_USERS_KEY)) {
-                localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify({ 
-                    "admin": { password: "admin", name: "System Administrator" }, 
-                    "9876543210": { password: "mumbai2026", name: "Rajesh Kumar" } 
-                }));
-            }
+            btn.innerText = "Processing...";
+            btn.disabled = true;
             
-            // Check session
-            const activeSessionToken = localStorage.getItem(LOCAL_STORAGE_SESSION_KEY);
-            if (activeSessionToken) {
-                // launchDashboardShell(JSON.parse(activeSessionToken));
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('screen-auth-gateway').classList.remove('active');
+                    document.getElementById('appMainContainer').classList.add('active');
+                } else {
+                    alert("Error: " + (data.detail || "Login failed"));
+                }
+            } catch (err) {
+                alert("Connection Error. Check the backend server.");
+            } finally {
+                btn.innerText = "Request OTP";
+                btn.disabled = false;
             }
-        });
+        }
     </script>
 </body>
 </html>
