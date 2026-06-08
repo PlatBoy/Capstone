@@ -1,671 +1,118 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-<script>
-  // =========================================================================
-  // 🌐 NETWORK GATEWAY CONFIGURATION
-  // =========================================================================
-  // If your backend is deployed on a separate Vercel app URL, paste it here.
-  // Otherwise, leave it empty to automatically detect the current domain.
-  const BACKEND_URL = ""; 
-
-  function getApiUrl(endpoint) {
-    const base = BACKEND_URL.trim() ? BACKEND_URL.trim().replace(/\/$/, "") : window.location.origin;
-    return `${base}${endpoint}`;
-  }
-
-  // Local Database Storage Directories
-  const LOCAL_STORAGE_HISTORY_KEY = 'krishiSenseHistoryLog';
-  const LOCAL_STORAGE_SESSION_KEY = 'krishiSenseUserSession';
-  const LOCAL_STORAGE_USERS_KEY = 'krishiSenseRegisteredUsers';
-  const LOCAL_STORAGE_GLOBAL_LOGS_KEY = 'krishiSenseGlobalLogsSystem';
-
-  let currentAuthMode = 'login'; 
-  let currentAdminViewActiveMode = 'app'; 
-  let imageBase64Payload = null; 
-  let chartObjectInstance = null;
-
-  let activeAuthPendingUsername = null;
-
-  // =========================================================================
-  // 🚀 BOOTSTRAP APP SYSTEM
-  // =========================================================================
-  (function initializeAppGateway() {
-    if (!localStorage.getItem(LOCAL_STORAGE_USERS_KEY)) {
-      localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify({ 
-        "admin": { password: "admin", name: "System Administrator" }, 
-        "9876543210": { password: "mumbai2026", name: "Rajesh Kumar" } 
-      }));
-    }
-    if (!localStorage.getItem(LOCAL_STORAGE_GLOBAL_LOGS_KEY)) {
-      localStorage.setItem(LOCAL_STORAGE_GLOBAL_LOGS_KEY, JSON.stringify([]));
-    }
-
-    const activeSessionToken = localStorage.getItem(LOCAL_STORAGE_SESSION_KEY);
-    const savedTheme = localStorage.getItem('krishiSenseTheme');
-    
-    if (savedTheme === 'dark') {
-      document.body.classList.add('dark-theme');
-      updateThemeToggleButtonUI(true);
-    }
-
-    if (activeSessionToken) {
-      launchDashboardShell(activeSessionToken);
-    } else {
-      shutdownDashboardShell();
-    }
-    syncAdminPanels();
-  })();
-
-  // =========================================================================
-  // 🔐 SECURITY & AUTHENTICATION SYSTEMS (API BOUND)
-  // =========================================================================
-  function toggleAuthPortalMode() {
-    const title = document.getElementById('authDisplayTitle');
-    const desc = document.getElementById('authDisplayDesc');
-    const toggleLink = document.getElementById('authToggleModeLink');
-    const submitBtn = document.getElementById('authSubmitBtn');
-    const nameField = document.getElementById('registrationNameField');
-    const usernameLabel = document.getElementById('usernameFieldLabel');
-    const usernameInput = document.getElementById('authUsername');
-
-    document.getElementById('authForm').style.display = 'block';
-    document.getElementById('otpVerificationForm').style.display = 'none';
-
-    if (currentAuthMode === 'login') {
-      currentAuthMode = 'register';
-      title.textContent = "Register Plot Hub";
-      desc.textContent = "Deploy an administrative agronomic access key";
-      usernameLabel.textContent = "Mobile Number";
-      usernameInput.placeholder = "e.g. 9876543210";
-      usernameInput.type = "tel";
-      usernameInput.pattern = "[0-9]{10}";
-      submitBtn.innerHTML = "📝 Initialize Account & Send OTP";
-      toggleLink.textContent = "Already have an account? Login here";
-      nameField.style.display = 'block';
-      document.getElementById('authFullName').required = true;
-    } else {
-      currentAuthMode = 'login';
-      title.textContent = "Farmer Login";
-      desc.textContent = "Access your predictive agronomic dashboard";
-      usernameLabel.textContent = "Mobile Number / Admin ID";
-      usernameInput.placeholder = "e.g. 9876543210 or admin";
-      usernameInput.type = "text";
-      usernameInput.removeAttribute("pattern");
-      submitBtn.innerHTML = "🔓 Request 2FA OTP Secure Token";
-      toggleLink.textContent = "Need an account? Register Plot Hub";
-      nameField.style.display = 'none';
-      document.getElementById('authFullName').required = false;
-    }
-  }
-
-  async class HandshakeRequest {
-    constructor(username, password, fullName, mode) {
-      this.username = username;
-      this.password = password;
-      this.fullName = fullName;
-      this.mode = mode;
-    }
-  }
-
-  async function executeAuthAction(e) {
-    e.preventDefault();
-    const user = document.getElementById('authUsername').value.trim();
-    const pass = document.getElementById('authPassword').value;
-    const fullName = document.getElementById('authFullName').value.trim();
-
-    if (!user || !pass) return;
-
-    const submitBtn = document.getElementById('authSubmitBtn');
-    const primaryText = submitBtn.innerHTML;
-    submitBtn.innerHTML = "⚡ Initializing Routing Handshake...";
-    submitBtn.disabled = true;
-
-    try {
-      const response = await fetch(getApiUrl("/api/auth/request-otp"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: user, password: pass, fullName: fullName, mode: currentAuthMode })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Authentication handshake rejected.");
-      }
-
-      // Track registered records locally for metrics engine simulation sync
-      if (currentAuthMode === 'register') {
-        const localUsers = JSON.parse(localStorage.getItem(LOCAL_STORAGE_USERS_KEY));
-        localUsers[user] = { password: pass, name: fullName || "Farmer Plot" };
-        localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(localUsers));
-      }
-
-      activeAuthPendingUsername = user;
-      dispatch2FATokenGate(data.message);
-
-    } catch (error) {
-      alert(`⚠️ SecCore Refusal: ${error.message}`);
-    } finally {
-      submitBtn.innerHTML = primaryText;
-      submitBtn.disabled = false;
-    }
-  }
-
-  function dispatch2FATokenGate(serverMessage) {
-    document.getElementById('authForm').style.display = 'none';
-    document.getElementById('otpVerificationForm').style.display = 'block';
-    
-    const displayBanner = document.getElementById('otpSimulationText');
-    
-    // Check if FastAPI backend fell back to developer sandbox testing values
-    if (serverMessage.includes("Your generated OTP code is:")) {
-      const extractedOtp = serverMessage.split("Your generated OTP code is:")[1].trim();
-      displayBanner.innerHTML = `<strong>[SANDBOX OTP]:</strong> Copy token key 🔑 <mark style="background:#fcd34d; padding:2px 6px; border-radius:4px; font-weight:bold;">${extractedOtp}</mark> to bypass.`;
-    } else {
-      displayBanner.innerHTML = `<strong>📱 Live SMS Outbound:</strong> 2FA verification message routed via Twilio systems.`;
-    }
-    document.getElementById('otpInputField').focus();
-  }
-
-  async function validateSecurityOTP(e) {
-    e.preventDefault();
-    const submittedOtp = document.getElementById('otpInputField').value.trim();
-    
-    try {
-      const response = await fetch(getApiUrl("/api/auth/verify-otp"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: activeAuthPendingUsername, otp: submittedOtp })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || "One-Time Password challenge failed.");
-      }
-
-      // Log login into global audit log track
-      logSystemAuditTrail(activeAuthPendingUsername, "System Core", "Access Granted (2FA Handshake Secure)");
-      
-      // Save secure login identity token session state
-      localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, JSON.stringify(data));
-      launchDashboardShell(data);
-
-    } catch (error) {
-      alert(`🛡️ SecCore Rejection: ${error.message}`);
-      document.getElementById('otpInputField').value = "";
-    }
-  }
-
-  function launchDashboardShell(sessionObj) {
-    let parsedSession = typeof sessionObj === 'string' ? JSON.parse(sessionObj) : sessionObj;
-    
-    document.getElementById('screen-auth-gateway').style.display = 'none';
-    document.getElementById('appProgressBar').style.display = 'flex';
-    document.getElementById('appMainContainer').style.display = 'block';
-    document.getElementById('logoutBtn').style.display = 'flex';
-
-    if (parsedSession.profile === 'admin') {
-      document.getElementById('adminToggleViewBtn').style.display = 'flex';
-    } else {
-      document.getElementById('adminToggleViewBtn').style.display = 'none';
-    }
-    
-    returnToScanScreen();
-    syncAdminPanels();
-    renderCachedScansList();
-  }
-
-  function terminateSession() {
-    localStorage.removeItem(LOCAL_STORAGE_SESSION_KEY);
-    activeAuthPendingUsername = null;
-    currentAuthMode = 'login';
-    
-    // Clear login input forms safely
-    document.getElementById('authUsername').value = "";
-    document.getElementById('authPassword').value = "";
-    document.getElementById('authFullName').value = "";
-    document.getElementById('otpInputField').value = "";
-    
-    shutdownDashboardShell();
-  }
-
-  function shutdownDashboardShell() {
-    document.getElementById('screen-auth-gateway').style.display = 'block';
-    document.getElementById('authForm').style.display = 'block';
-    document.getElementById('otpVerificationForm').style.display = 'none';
-    
-    document.getElementById('appProgressBar').style.display = 'none';
-    document.getElementById('appMainContainer').style.display = 'none';
-    document.getElementById('logoutBtn').style.display = 'none';
-    document.getElementById('adminToggleViewBtn').style.display = 'none';
-    
-    // Default form configuration reset
-    currentAuthMode = 'register';
-    toggleAuthPortalMode();
-  }
-
-  // =========================================================================
-  // 📷 FILE ENGINE & UI SYSTEM CONTROLS
-  // =========================================================================
-  function handleImageFile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      imageBase64Payload = event.target.result;
-      document.getElementById('uploadDropZone').style.display = 'none';
-      const container = document.getElementById('previewContainer');
-      container.style.display = 'block';
-      document.getElementById('imagePreview').src = imageBase64Payload;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function toggleAppTheme() {
-    const isDark = document.body.classList.toggle('dark-theme');
-    localStorage.setItem('krishiSenseTheme', isDark ? 'dark' : 'light');
-    updateThemeToggleButtonUI(isDark);
-    if (chartObjectInstance) runStatisticalChartEngine(); // Redraw chart for proper grid visibility
-  }
-
-  function updateThemeToggleButtonUI(isDark) {
-    document.getElementById('themeToggleBtn').textContent = isDark ? '☀️' : '🌙';
-  }
-
-  function switchAppScreenView(targetScreenId) {
-    const views = document.querySelectorAll('.screen');
-    views.forEach(v => {
-      v.classList.remove('active');
-      v.style.display = 'none';
-    });
-    
-    const target = document.getElementById(targetScreenId);
-    target.style.display = 'block';
-    setTimeout(() => target.classList.add('active'), 50);
-
-    // Synchronize Top Tracker Navigation Stepper layout matrix
-    document.getElementById('stepPill-upload').classList.remove('active');
-    document.getElementById('stepPill-process').classList.remove('active');
-    document.getElementById('stepPill-results').classList.remove('active');
-
-    if (targetScreenId === 'screen-upload') document.getElementById('stepPill-upload').classList.add('active');
-    if (targetScreenId === 'screen-process') document.getElementById('stepPill-process').classList.add('active');
-    if (targetScreenId === 'screen-results') document.getElementById('stepPill-results').classList.add('active');
-  }
-
-  function returnToScanScreen() {
-    imageBase64Payload = null;
-    document.getElementById('imgInput').value = "";
-    document.getElementById('uploadDropZone').style.display = 'block';
-    document.getElementById('previewContainer').style.display = 'none';
-    switchAppScreenView('screen-upload');
-  }
-
-  // =========================================================================
-  // 🔬 PREDICTIVE ANALYTICS ENGINE (HIGH INTERACTIVE SIMULATION)
-  // =========================================================================
-  function initiateAnalysis() {
-    if (!imageBase64Payload) {
-      alert("📷 Action Required: Please upload or capture an algorithmic crop matrix photograph first.");
-      return;
-    }
-
-    switchAppScreenView('screen-process');
-    
-    const titles = [
-      "Connecting Matrix Nodes...",
-      "Analyzing Leaf Surface Saturation...",
-      "Computing Agronomic Micro-Factors...",
-      "Running Matrix Target Synthesis..."
-    ];
-    const subs = [
-      "Contacting serverless FastAPI computing nodes.",
-      "Parsing geometric RGB arrays to evaluate chlorophyll density.",
-      "Overlaying local climate trends with soil composition types.",
-      "Formatting visualization charts and market index arrays."
-    ];
-
-    let pipelineStep = 0;
-    const processInterval = setInterval(() => {
-      if (pipelineStep < titles.length) {
-        document.getElementById('processTitle').textContent = titles[pipelineStep];
-        document.getElementById('processSub').textContent = subs[pipelineStep];
-        pipelineStep++;
-      } else {
-        clearInterval(processInterval);
-        compileAgronomicMetricsOutput();
-      }
-    }, 700);
-  }
-
-  function compileAgronomicMetricsOutput() {
-    const crop = document.getElementById('cropSelect').value;
-    const region = document.getElementById('regionSelect').value;
-    const size = parseFloat(document.getElementById('farmSizeInput').value) || 1;
-    const soil = document.getElementById('soilSelect').value;
-
-    // Simulation Data Generator Matrix
-    const conditions = ["Optimal", "Warning", "Critical"];
-    const conditionResult = conditions[Math.floor(Math.random() * conditions.length)];
-    
-    let baseYield = 12; // Quintals per acre base benchmark mapping
-    if (crop === "Wheat") baseYield = 18;
-    if (crop === "Rice") baseYield = 22;
-    if (crop === "Sugarcane") baseYield = 280;
-
-    const yieldFluctuation = conditionResult === "Optimal" ? 1.15 : (conditionResult === "Warning" ? 0.85 : 0.45);
-    const calculatedPerAcreYield = Math.round(baseYield * yieldFluctuation * 10) / 10;
-    const computedTotalVolume = Math.round(calculatedPerAcreYield * size);
-    
-    let basePricePerQuintal = 2200; // INR currency mapping constants
-    if (crop === "Cotton") basePricePerQuintal = 6800;
-    if (crop === "Tomato") basePricePerQuintal = 1500;
-    if (crop === "Mustard") basePricePerQuintal = 5400;
-
-    const aggregateFinancialValuation = computedTotalVolume * basePricePerQuintal;
-
-    // Populate Results Screen Metrics UI directly
-    document.getElementById('diagCropRegionHeader').textContent = `${crop} Core • Region ${region} Profile`;
-    
-    const badge = document.getElementById('diagStatusBadge');
-    badge.className = "diag-badge"; 
-    
-    let diagnosisSummaryText = "";
-    let interventions = [];
-
-    if (conditionResult === "Optimal") {
-      badge.textContent = "Healthy Leaf Matrix";
-      badge.classList.add('status-healthy');
-      diagnosisSummaryText = `Predictive AI verification confirms healthy cellular structure across the ${soil} composition layout. Chlorophyll indices tracking at optimal efficiency parameters.`;
-      interventions = [
-        "Maintain current standard macro-nutrient fertilization loops.",
-        "Moisture vectors tracking within acceptable parameters; monitor next irrigation threshold cycle.",
-        "Preventative bio-pesticide layer recommended before approaching standard harvesting Windows."
-      ];
-    } else if (conditionResult === "Warning") {
-      badge.textContent = "Mild Deficiency Detected";
-      badge.classList.add('status-warning');
-      diagnosisSummaryText = `Warning nodes pinpoint anomalous discoloration. Structural matrix suggests initial stages of nitrogen deficiency or slight moisture depletion. Intervene swiftly to protect yield volume.`;
-      interventions = [
-        "Deploy targeted top-dressing applications of nitrogenous fertilizer mixtures (Urea/DAP).",
-        "Calibrate micro-irrigation systems to compensate for localized soil porosity.",
-        "Audit foliage clusters over a 48-hour cycle to prevent microbial distribution spreading."
-      ];
-    } else {
-      badge.textContent = "Pathological Alert";
-      badge.classList.add('status-danger');
-      diagnosisSummaryText = `Critical Alert: Neural vision frameworks indicate aggressive pathological anomalies matching localized rust/blight signatures. Immediate chemical isolation vectors requested.`;
-      interventions = [
-        "Isolate impacted field quadrants immediately to eliminate systemic spores spreading.",
-        "Apply verified wide-spectrum fungicides or chemical counter-agents immediately.",
-        "Halt immediate nitrogen application streams to lower plant-tissue vulnerability."
-      ];
-    }
-
-    document.getElementById('diagDesc').textContent = diagnosisSummaryText;
-    document.getElementById('y_perAcre').textContent = calculatedPerAcreYield;
-    document.getElementById('y_total').textContent = computedTotalVolume;
-    document.getElementById('y_rev').textContent = `₹${aggregateFinancialValuation.toLocaleString('en-IN')}`;
-    document.getElementById('y_desc').textContent = `Yield projections computed assuming structured management fields over ${size} total cultivated acres using ${soil} soil variables.`;
-
-    // Weather Display Mapping Engine
-    document.getElementById('w_temp').textContent = conditionResult === "Optimal" ? "31°C" : (conditionResult === "Warning" ? "36°C" : "19°C");
-    document.getElementById('w_desc').textContent = conditionResult === "Optimal" ? "Steady atmospheric window." : "Increased evapotranspiration threats.";
-    document.getElementById('w_humidity').textContent = `RH: ${conditionResult === "Optimal" ? "62%" : "41%"}`;
-
-    // Field Ledger Tasks Population Loop
-    const recContainer = document.getElementById('recContainer');
-    recContainer.innerHTML = "";
-    interventions.forEach(task => {
-      const li = document.createElement('li');
-      li.innerHTML = `<span class="check-icon">✓</span> <div>${task}</div>`;
-      recContainer.appendChild(li);
-    });
-
-    // Handle Market Analytics Chart Rendering Mechanics
-    document.getElementById('mktDesc').textContent = `Current minimum support price parameters and wholesale transactional indexing maps point to steady trading behaviors for ${crop} across the ${region} mandis.`;
-    
-    const marketContainer = document.getElementById('mktListContainer');
-    marketContainer.innerHTML = `
-      <div class="market-item">
-        <div><div class="market-name-row">Local Mandi Price</div><div class="market-price">₹${basePricePerQuintal}</div></div>
-        <span class="trend-box trend-up">▲ 2.4%</span>
-      </div>
-      <div class="market-item">
-        <div><div class="market-name-row">National MSP Index</div><div class="market-price">₹${Math.round(basePricePerQuintal * 0.95)}</div></div>
-        <span class="trend-box trend-up">Stable</span>
-      </div>
-    `;
-
-    // Fire off Analytics Charting Component
-    switchAppScreenView('screen-results');
-    
-    // Construct dynamic pricing trendline array matching crop selections
-    const dynamicTrendline = Array.from({length: 6}, () => Math.round(basePricePerQuintal * (0.9 + Math.random() * 0.2)));
-    runStatisticalChartEngine(dynamicTrendline);
-
-    // Save scan inside localized history tracking directories
-    const currentSession = JSON.parse(localStorage.getItem(LOCAL_STORAGE_SESSION_KEY));
-    const executingUser = currentSession ? currentSession.profile : '9876543210';
-    
-    cacheScanHistoryLog(executingUser, crop, conditionResult, calculatedPerAcreYield);
-  }
-
-  function runStatisticalChartEngine(datapoints = [2100, 2150, 2200, 2180, 2240, 2300]) {
-    const ctx = document.getElementById('mktChart').getContext('2d');
-    if (chartObjectInstance) chartObjectInstance.destroy();
-
-    const checkDarkThemeActive = document.body.classList.contains('dark-theme');
-    const colorGridSystem = checkDarkThemeActive ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)';
-    const colorTextSystem = checkDarkThemeActive ? '#9ca3af' : '#6b7280';
-
-    chartObjectInstance = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Current', 'Forecast'],
-        datasets: [{
-          label: 'Market Valuation Index (₹)',
-          data: datapoints,
-          borderColor: '#22c55e',
-          borderWidth: 3,
-          backgroundColor: 'rgba(34, 197, 94, 0.08)',
-          fill: true,
-          tension: 0.35,
-          pointRadius: 4,
-          pointBackgroundColor: '#166534'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { color: colorGridSystem }, ticks: { color: colorTextSystem, font: { family: 'DM Sans' } } },
-          y: { grid: { color: colorGridSystem }, ticks: { color: colorTextSystem, font: { family: 'DM Sans' } } }
-        }
-      }
-    });
-  }
-
-  // =========================================================================
-  // 📜 PERSISTENCE STORAGE HISTORY LOGS ENGINE
-  // =========================================================================
-  function cacheScanHistoryLog(username, cropMatrix, healthState, metricVal) {
-    const userScansLog = JSON.parse(localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY)) || [];
-    const timestampString = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-
-    const historicalRecord = {
-      user: username,
-      crop: cropMatrix,
-      status: healthState,
-      yield: metricVal,
-      time: timestampString
-    };
-
-    userScansLog.unshift(historicalRecord);
-    localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify(userScansLog));
-    
-    // Concurrently trigger addition to Global Master Audit Framework Directory
-    logSystemAuditTrail(username, cropMatrix, `Scan Complete: Status [${healthState}] Generated.`);
-    renderCachedScansList();
-    syncAdminPanels();
-  }
-
-  function renderCachedScansList() {
-    const userScansLog = JSON.parse(localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY)) || [];
-    const container = document.getElementById('historyListContainer');
-    const clearBtn = document.getElementById('btnClearHistory');
-    
-    container.innerHTML = "";
-    
-    const currentSession = JSON.parse(localStorage.getItem(LOCAL_STORAGE_SESSION_KEY));
-    if (!currentSession) return;
-    
-    // Filter local scan cards visibility based on logged identity context
-    const filteredRecords = userScansLog.filter(item => 
-      currentSession.profile === 'admin' || item.user === currentSession.profile
-    );
-
-    if (filteredRecords.length === 0) {
-      container.innerHTML = `<li class="history-empty-log">No prior scan profiles tracked in this account ledger.</li>`;
-      clearBtn.style.display = "none";
-      return;
-    }
-
-    clearBtn.style.display = "block";
-
-    filteredRecords.forEach(log => {
-      const card = document.createElement('li');
-      card.className = "history-card";
-      
-      let badgeClass = "status-healthy";
-      if (log.status === "Warning") badgeClass = "status-warning";
-      if (log.status === "Critical") badgeClass = "status-danger";
-
-      card.innerHTML = `
-        <div class="history-left-meta">
-          <div class="history-crop-title">${log.crop} Matrix</div>
-          <div class="history-sub-details">Yield Factor: ${log.yield} Qtl/Ac • Account: ${log.user}</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KrishiSense - Agronomic Engine</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f3f4f6; margin: 0; padding: 20px; }
+        .screen { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+        .screen.active { display: block; }
+        .dark-theme { background-color: #1f2937; color: white; }
+        input, select, button { display: block; width: 100%; margin: 10px 0; padding: 10px; }
+        .diag-badge { padding: 5px 10px; border-radius: 4px; font-weight: bold; }
+        .status-healthy { background: #dcfce7; color: #166534; }
+        .status-warning { background: #fef9c3; color: #854d0e; }
+        .status-danger { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+    <div id="screen-auth-gateway" class="screen active">
+        <h1 id="authDisplayTitle">Farmer Login</h1>
+        <p id="authDisplayDesc">Access your predictive agronomic dashboard</p>
+        <form id="authForm" onsubmit="executeAuthAction(event)">
+            <label id="usernameFieldLabel">Mobile Number / Admin ID</label>
+            <input type="text" id="authUsername" required placeholder="e.g. 9876543210">
+            <input type="password" id="authPassword" required placeholder="Password">
+            <div id="registrationNameField" style="display:none;">
+                <input type="text" id="authFullName" placeholder="Full Name">
+            </div>
+            <button id="authSubmitBtn" type="submit">🔓 Request 2FA OTP Secure Token</button>
+        </form>
+        <form id="otpVerificationForm" style="display:none;" onsubmit="validateSecurityOTP(event)">
+            <p id="otpSimulationText"></p>
+            <input type="text" id="otpInputField" required placeholder="Enter 6-digit OTP">
+            <button type="submit">Verify OTP</button>
+        </form>
+        <a href="#" id="authToggleModeLink" onclick="toggleAuthPortalMode()">Need an account? Register Plot Hub</a>
+    </div>
+
+    <div id="appMainContainer" class="screen">
+        <div id="appProgressBar" style="display:flex;">System Initialized</div>
+        <button id="logoutBtn" onclick="terminateSession()">Logout</button>
+        <button id="adminToggleViewBtn" onclick="toggleAdminViewMode()">View Console</button>
+        
+        <div id="screen-upload" class="screen active">
+            <h2>Upload Crop Image</h2>
+            <div id="uploadDropZone">
+                <input type="file" id="imgInput" onchange="handleImageFile(event)">
+            </div>
+            <select id="cropSelect"><option>Wheat</option><option>Rice</option><option>Sugarcane</option><option>Cotton</option></select>
+            <select id="regionSelect"><option>Zone A</option><option>Zone B</option></select>
+            <select id="soilSelect"><option>Clay</option><option>Loam</option><option>Sandy</option></select>
+            <input type="number" id="farmSizeInput" placeholder="Acres">
+            
+            <div id="previewContainer" style="display:none;">
+                <img id="imagePreview" style="max-width:200px;">
+                <button onclick="initiateAnalysis()">Analyze</button>
+            </div>
         </div>
-        <div class="history-right-meta">
-          <span class="history-badge ${badgeClass}">${log.status}</span>
-          <div class="history-timestamp">${log.time}</div>
+
+        <div id="screen-process" class="screen">
+            <h2 id="processTitle">Analyzing...</h2>
+            <p id="processSub"></p>
         </div>
-      `;
-      container.appendChild(card);
-    });
-  }
 
-  function clearCachedScans() {
-    if (confirm("⚠️ Action Confirmation: Wipe localized scan history listings? This cannot be undone.")) {
-      localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify([]));
-      renderCachedScansList();
-      syncAdminPanels();
-    }
-  }
+        <div id="screen-results" class="screen">
+            <h2 id="diagCropRegionHeader"></h2>
+            <span id="diagStatusBadge"></span>
+            <p id="diagDesc"></p>
+            <div id="y_perAcre"></div>
+            <div id="y_total"></div>
+            <div id="y_rev"></div>
+            <p id="y_desc"></p>
+            <div id="w_temp"></div>
+            <div id="w_desc"></div>
+            <div id="w_humidity"></div>
+            <ul id="recContainer"></ul>
+            <p id="mktDesc"></p>
+            <div id="mktListContainer"></div>
+            <canvas id="mktChart"></canvas>
+            <button onclick="returnToScanScreen()">Back</button>
+        </div>
 
-  // =========================================================================
-  // 👑 ADMIN MASTER CONSOLE SYSTEM STRATAGEMS
-  // =========================================================================
-  function logSystemAuditTrail(userProfile, identityMatrix, descriptionContext) {
-    const streamLogs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_GLOBAL_LOGS_KEY)) || [];
-    const stamp = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    
-    streamLogs.unshift({
-      time: stamp,
-      profile: userProfile,
-      matrix: identityMatrix,
-      action: descriptionContext
-    });
-    
-    localStorage.setItem(LOCAL_STORAGE_GLOBAL_LOGS_KEY, JSON.stringify(streamLogs));
-  }
+        <div id="screen-admin-dashboard" class="screen">
+            <h2>Admin Dashboard</h2>
+            <div id="admMetricUsers"></div>
+            <div id="admMetricScans"></div>
+            <table id="adminUserTableBody"></table>
+            <table id="adminLogsTableBody"></table>
+            <ul id="historyListContainer"></ul>
+            <button id="btnClearHistory" onclick="clearCachedScans()">Clear History</button>
+        </div>
+    </div>
 
-  function toggleAdminViewMode() {
-    const adminPanel = document.getElementById('screen-admin-dashboard');
-    const uploadPanel = document.getElementById('screen-upload');
-    const processPanel = document.getElementById('screen-process');
-    const resultsPanel = document.getElementById('screen-results');
-    const toggleBtn = document.getElementById('adminToggleViewBtn');
-    const progressStepper = document.getElementById('appProgressBar');
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // Wrap everything in an event listener to ensure DOM is ready
+        document.addEventListener("DOMContentLoaded", () => {
+            // Fix: Standard Class syntax
+            class HandshakeRequest {
+                constructor(username, password, fullName, mode) {
+                    this.username = username;
+                    this.password = password;
+                    this.fullName = fullName;
+                    this.mode = mode;
+                }
+            }
 
-    if (currentAdminViewActiveMode === 'app') {
-      currentAdminViewActiveMode = 'admin';
-      toggleBtn.innerHTML = "🌾 App Workspace";
-      toggleBtn.style.background = "rgba(234, 179, 8, 0.2)";
-      toggleBtn.style.borderColor = "#eab308";
-      
-      // Hide standard operational view fields completely
-      uploadPanel.style.display = 'none';
-      processPanel.style.display = 'none';
-      resultsPanel.style.display = 'none';
-      progressStepper.style.display = 'none';
-      
-      adminPanel.style.display = 'block';
-      setTimeout(() => adminPanel.classList.add('active'), 50);
-      syncAdminPanels();
-    } else {
-      currentAdminViewActiveMode = 'app';
-      toggleBtn.innerHTML = "📊 View Console";
-      toggleBtn.style.background = "rgba(255, 255, 255, 0.12)";
-      toggleBtn.style.borderColor = "rgba(255, 255, 255, 0.2)";
-      
-      adminPanel.style.display = 'none';
-      adminPanel.classList.remove('active');
-      progressStepper.style.display = 'flex';
-      returnToScanScreen();
-    }
-  }
-
-  function syncAdminPanels() {
-    const databaseUsers = JSON.parse(localStorage.getItem(LOCAL_STORAGE_USERS_KEY)) || {};
-    const historicalScans = JSON.parse(localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY)) || [];
-    const auditLogsList = JSON.parse(localStorage.getItem(LOCAL_STORAGE_GLOBAL_LOGS_KEY)) || [];
-
-    const accountKeysArray = Object.keys(databaseUsers);
-    
-    // Render statistical counter blocks dynamically
-    document.getElementById('admMetricUsers').textContent = accountKeysArray.length;
-    document.getElementById('admMetricScans').textContent = historicalScans.length;
-
-    // Repopulate Identity Matrix Registry Table
-    const userTableBody = document.getElementById('adminUserTableBody');
-    userTableBody.innerHTML = "";
-    
-    accountKeysArray.forEach(key => {
-      const matchScansCount = historicalScans.filter(s => s.user === key).length;
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td><strong>${key}</strong></td>
-        <td>${databaseUsers[key].name}</td>
-        <td><span class="pass-reveal">${databaseUsers[key].password}</span></td>
-        <td>${matchScansCount} scans execution</td>
-      `;
-      userTableBody.appendChild(row);
-    });
-
-    // Repopulate System Security Audit Streams Table
-    const logTableBody = document.getElementById('adminLogsTableBody');
-    logTableBody.innerHTML = "";
-
-    if (auditLogsList.length === 0) {
-      logTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No global events flagged within active framework pipeline memory.</td></tr>`;
-      return;
-    }
-
-    // Capture newest 8 event tracks to avoid buffer overflows on UI displays
-    auditLogsList.slice(0, 8).forEach(evt => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td style="color:var(--text-muted);">${evt.time}</td>
-        <td><span class="pass-reveal">${evt.profile}</span></td>
-        <td><small>${evt.matrix}</small></td>
-        <td><strong>${evt.action}</strong></td>
-      `;
-      logTableBody.appendChild(row);
-    });
-  }
-</script>
+            // --- PASTE YOUR PREVIOUS LOGIC FUNCTIONS BELOW ---
+            // (e.g., executeAuthAction, initiateAnalysis, etc.)
+            
+            // Initial call to start the system
+            console.log("App Initialized");
+        });
+    </script>
 </body>
 </html>
