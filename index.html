@@ -39,9 +39,10 @@
     </div>
 
     <div id="appMainContainer" class="screen">
-        <div id="appProgressBar" style="display:flex;">System Initialized</div>
+        <div id="appProgressBar" style="display:none;">System Active</div>
         <button id="logoutBtn" onclick="terminateSession()">Logout</button>
         <button id="adminToggleViewBtn" onclick="toggleAdminViewMode()">View Console</button>
+        <button id="themeToggleBtn" onclick="toggleAppTheme()">🌙</button>
         
         <div id="screen-upload" class="screen active">
             <h2>Upload Crop Image</h2>
@@ -95,23 +96,64 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
-        // Wrap everything in an event listener to ensure DOM is ready
-        document.addEventListener("DOMContentLoaded", () => {
-            // Fix: Standard Class syntax
-            class HandshakeRequest {
-                constructor(username, password, fullName, mode) {
-                    this.username = username;
-                    this.password = password;
-                    this.fullName = fullName;
-                    this.mode = mode;
-                }
+        // --- 1. GLOBAL SCOPE: All functions go here so buttons can see them ---
+        class HandshakeRequest {
+            constructor(username, password, fullName, mode) {
+                this.username = username;
+                this.password = password;
+                this.fullName = fullName;
+                this.mode = mode;
             }
+        }
 
-            // --- PASTE YOUR PREVIOUS LOGIC FUNCTIONS BELOW ---
-            // (e.g., executeAuthAction, initiateAnalysis, etc.)
-            
-            // Initial call to start the system
+        const BACKEND_URL = ""; 
+        const LOCAL_STORAGE_HISTORY_KEY = 'krishiSenseHistoryLog';
+        const LOCAL_STORAGE_SESSION_KEY = 'krishiSenseUserSession';
+        const LOCAL_STORAGE_USERS_KEY = 'krishiSenseRegisteredUsers';
+        const LOCAL_STORAGE_GLOBAL_LOGS_KEY = 'krishiSenseGlobalLogsSystem';
+
+        let currentAuthMode = 'login'; 
+        let currentAdminViewActiveMode = 'app'; 
+        let imageBase64Payload = null; 
+        let chartObjectInstance = null;
+        let activeAuthPendingUsername = null;
+
+        function getApiUrl(endpoint) {
+            const base = BACKEND_URL.trim() ? BACKEND_URL.trim().replace(/\/$/, "") : window.location.origin;
+            return `${base}${endpoint}`;
+        }
+
+        function executeAuthAction(e) {
+            e.preventDefault();
+            console.log("Auth action triggered!");
+            // ... (Add your logic from previous script here)
+        }
+
+        function validateSecurityOTP(e) {
+            e.preventDefault();
+            // ... (Add your logic from previous script here)
+        }
+
+        function toggleAuthPortalMode() {
+            // ... (Add your logic from previous script here)
+        }
+
+        // Add ALL your other functions (initiateAnalysis, launchDashboardShell, etc.) here.
+
+        // --- 2. INITIALIZATION: Runs once on page load ---
+        document.addEventListener("DOMContentLoaded", () => {
             console.log("App Initialized");
+            
+            // Logic for first-time setup
+            if (!localStorage.getItem(LOCAL_STORAGE_USERS_KEY)) {
+                localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify({ 
+                    "admin": { password: "admin", name: "System Administrator" }, 
+                    "9876543210": { password: "mumbai2026", name: "Rajesh Kumar" } 
+                }));
+            }
+            
+            // Trigger your setup function here
+            // initializeAppGateway();
         });
     </script>
 </body>
