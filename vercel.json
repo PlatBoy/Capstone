@@ -1,9 +1,9 @@
 {
-  "buildCommand": "echo 'Static deployment'",
+  "buildCommand": "pip install -r requirements.txt",
   "outputDirectory": ".",
   "functions": {
-    "api/**.js": {
-      "maxDuration": 30
+    "api/**.py": {
+      "runtime": "python3.9"
     }
   }
 }
