@@ -1,14 +1,7 @@
 {
-  "name": "krishisense",
+  "name": "your-project-name",
   "version": "1.0.0",
-  "description": "KrishiSense - Soil-to-Shelf AI Engine for crop analysis",
-  "type": "module",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'Python-based deployment'",
-    "start": "python main.py"
-  },
-  "keywords": ["agriculture", "ai", "crop-analysis", "farming"],
-  "author": "PlatBoy",
-  "license": "MIT"
+    "build": "echo 'No build step needed for Python backend'"
+  }
 }
