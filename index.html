@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KrishiSense</title>
+<title>KrishiSense - Admin Console & Security Core</title>
 <style>
   /* Global Modern Farm Aesthetics */
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;700&display=swap');
@@ -83,22 +83,25 @@
     gap: 12px;
   }
 
-  .theme-toggle-btn, .logout-btn {
+  .theme-toggle-btn, .logout-btn, .admin-view-toggle-btn {
     background: rgba(255, 255, 255, 0.12);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: #ffffff;
     font-size: 16px;
     cursor: pointer;
     padding: 8px;
-    width: 38px;
     height: 38px;
-    border-radius: 50%;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
   }
-  .theme-toggle-btn:hover, .logout-btn:hover {
+  .theme-toggle-btn { width: 38px; border-radius: 50%; }
+  .logout-btn { width: 38px; border-radius: 50%; }
+  .admin-view-toggle-btn { padding: 0 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  
+  .theme-toggle-btn:hover, .logout-btn:hover, .admin-view-toggle-btn:hover {
     background: rgba(255, 255, 255, 0.22);
     border-color: #86efac;
   }
@@ -108,7 +111,7 @@
     background: var(--white);
     border-bottom: 1px solid var(--border);
     padding: 16px 24px;
-    display: none; /* Controlled by auth state */
+    display: none; 
     justify-content: center;
     gap: 12px;
     transition: background 0.3s ease, border-color 0.3s ease;
@@ -153,7 +156,7 @@
 
   /* Auth UI Portal Styling */
   .auth-wrapper {
-    max-width: 420px;
+    max-width: 440px;
     margin: 60px auto;
     padding: 0 16px;
   }
@@ -343,6 +346,20 @@
   .clear-logs-link:hover { text-decoration: underline; }
   .history-badge { font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 12px; }
 
+  /* Admin Database View Controls */
+  .admin-grid-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .admin-metric-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; }
+  .admin-metric-card h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .admin-metric-card div { font-family: 'Sora', sans-serif; font-size: 28px; font-weight: 700; color: var(--farm-deep); }
+  
+  .admin-table-wrapper { background: var(--white); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 28px; }
+  .admin-data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+  .admin-data-table th { background: var(--farm-pale); color: var(--farm-deep); font-weight: 700; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .admin-data-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text-primary); }
+  .admin-data-table tr:last-child td { border-bottom: none; }
+  .pass-reveal { font-family: monospace; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  body.dark-theme .pass-reveal { background: #1f293d; color: #f9fafb; }
+
   /* Image Upload Zone Customizations */
   .upload-zone { border: 2px dashed #a7d7ab; border-radius: 16px; background: var(--farm-pale); padding: 48px 24px; text-align: center; cursor: pointer; margin-bottom: 24px; }
   .upload-zone h3 { font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 600; color: var(--farm-deep); margin-top: 16px; }
@@ -350,6 +367,10 @@
   .preview-img-container { display: none; margin-bottom: 24px; position: relative; }
   .preview-img { width: 100%; max-height: 280px; object-fit: cover; border-radius: 16px; border: 1px solid var(--border); }
   .change-img-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 600; color: #166534; cursor: pointer; }
+
+  /* Simulated OTP Alert Banner styling */
+  .otp-sim-banner { background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 12px 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #b45309; }
+  body.dark-theme .otp-sim-banner { background: #251e10; border-color: #453005; color: #fcd34d; }
 </style>
 </head>
 <body>
@@ -357,6 +378,7 @@
 <div class="topbar">
   <div class="topbar-logo">Krishi<span>Sense</span></div>
   <div class="topbar-right-controls">
+    <button class="admin-view-toggle-btn" id="adminToggleViewBtn" onclick="toggleAdminViewMode()" style="display: none;">📊 View Console</button>
     <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleAppTheme()">🌙</button>
     <button class="logout-btn" id="logoutBtn" onclick="terminateSession()" style="display: none;" title="Logout">🚪</button>
   </div>
@@ -370,17 +392,35 @@
     </div>
     
     <form id="authForm" onsubmit="executeAuthAction(event)">
-      <div class="field-box">
-        <label class="field-label">Username / Identity</label>
-        <input class="farm-input" type="text" id="authUsername" placeholder="admin or farmer123" required autocomplete="username">
+      <div id="registrationNameField" class="field-box" style="display: none;">
+        <label class="field-label">Full Name</label>
+        <input class="farm-input" type="text" id="authFullName" placeholder="e.g. Rajesh Kumar">
       </div>
       <div class="field-box">
-        <label class="field-label">Secure Token Key (Password)</label>
+        <label class="field-label" id="usernameFieldLabel">Mobile Number / Admin ID</label>
+        <input class="farm-input" type="text" id="authUsername" placeholder="e.g. 9876543210 or admin" required autocomplete="username">
+      </div>
+      <div class="field-box">
+        <label class="field-label">Secure Passkey</label>
         <input class="farm-input" type="password" id="authPassword" placeholder="••••••••" required autocomplete="current-password">
       </div>
       
       <button class="analyze-btn" type="submit" id="authSubmitBtn" style="margin-top: 12px;">
-        🔓 Verify Identity
+        🔓 Request 2FA OTP Secure Token
+      </button>
+    </form>
+
+    <form id="otpVerificationForm" onsubmit="validateSecurityOTP(event)" style="display: none;">
+      <div class="otp-sim-banner">
+        <span>📱</span>
+        <div id="otpSimulationText"><strong>[SIMULATION] Secure 2FA Token Broadcasted.</strong> Check phone message center alert.</div>
+      </div>
+      <div class="field-box">
+        <label class="field-label" style="color: #b45309;">Enter 6-Digit One-Time Password</label>
+        <input class="farm-input" type="text" id="otpInputField" placeholder="000000" maxlength="6" pattern="\d{6}" required style="text-align: center; font-size: 22px; font-weight: 700; letter-spacing: 4px; border-color: #fcd34d;">
+      </div>
+      <button class="analyze-btn" type="submit" style="background: #d97706;">
+        🛡️ Authorize Core Handshake
       </button>
     </form>
     
@@ -397,6 +437,58 @@
 </div>
 
 <div class="main" id="appMainContainer" style="display: none;">
+
+  <div class="screen" id="screen-admin-dashboard">
+    <h2 class="section-label" style="margin-bottom: 8px;">👑 System Master Core</h2>
+    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">Global oversight across all active crop plot infrastructures.</p>
+
+    <div class="admin-grid-metrics">
+      <div class="admin-metric-card">
+        <h4>Registered Profiles</h4>
+        <div id="admMetricUsers">0</div>
+      </div>
+      <div class="admin-metric-card">
+        <h4>Total Scans Run</h4>
+        <div id="admMetricScans">0</div>
+      </div>
+      <div class="admin-metric-card">
+        <h4>Active Clusters</h4>
+        <div id="admMetricActive">1</div>
+      </div>
+    </div>
+
+    <h3 class="section-label" style="font-size: 16px; margin-bottom: 14px;">👥 Mobile Identity & Token Registry</h3>
+    <div class="admin-table-wrapper">
+      <table class="admin-data-table">
+        <thead>
+          <tr>
+            <th>Mobile Number / ID</th>
+            <th>Full Name</th>
+            <th>Token (Password)</th>
+            <th>Scans Dispatched</th>
+          </tr>
+        </thead>
+        <tbody id="adminUserTableBody">
+          </tbody>
+      </table>
+    </div>
+
+    <h3 class="section-label" style="font-size: 16px; margin-bottom: 14px;">📜 Global Audit Stream Logs</h3>
+    <div class="admin-table-wrapper" style="margin-bottom: 0;">
+      <table class="admin-data-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>User Mobile / ID</th>
+            <th>Crop Matrix</th>
+            <th>System Status</th>
+          </tr>
+        </thead>
+        <tbody id="adminLogsTableBody">
+          </tbody>
+      </table>
+    </div>
+  </div>
 
   <div class="screen active" id="screen-upload">
     <div class="field-box">
@@ -517,7 +609,7 @@
     <div class="dashboard-card">
       <div class="card-header">
         <div class="card-icon" style="background: #e0f2fe; color: #0369a1; padding: 10px; border-radius: 12px;">💰</div>
-        <div class="card-titles"><div class="card-main-title">Market Price & Selling Index</div><div class="card-sub-title" id="mktCropHeader">30-Day Forecast</div></div>
+        <div class="card-titles"><div class="card-main-title">Market Price & Selling Index</div><div class="card-sub-title">30-Day Forecast</div></div>
       </div>
       <div class="card-body">
         <div class="price-chart-wrap"><canvas id="mktChart" height="150"></canvas></div>
@@ -540,17 +632,35 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script>
-  // Auth & Session Configurations
-  let currentAuthMode = 'login'; // 'login' or 'register'
+  // Core Database Keys
   const LOCAL_STORAGE_HISTORY_KEY = 'krishiSenseHistoryLog';
   const LOCAL_STORAGE_SESSION_KEY = 'krishiSenseUserSession';
+  const LOCAL_STORAGE_USERS_KEY = 'krishiSenseRegisteredUsers';
+  const LOCAL_STORAGE_GLOBAL_LOGS_KEY = 'krishiSenseGlobalLogsSystem';
 
+  let currentAuthMode = 'login'; 
+  let currentAdminViewActiveMode = 'app'; 
   let imageBase64Payload = null; 
   let chartObjectInstance = null;
   let activeForecastPayloadCache = null; 
 
+  // OTP Operational Interceptors
+  let generatedSystemOTP = null;
+  let activeAuthPendingUsername = null;
+
   // Core App Gateway Bootstrapping
   (function initializeAppGateway() {
+    // Setup phone-centric base configuration directory maps
+    if (!localStorage.getItem(LOCAL_STORAGE_USERS_KEY)) {
+      localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify({ 
+        "admin": { password: "admin", name: "System Administrator" }, 
+        "9876543210": { password: "mumbai2026", name: "Rajesh Kumar" } 
+      }));
+    }
+    if (!localStorage.getItem(LOCAL_STORAGE_GLOBAL_LOGS_KEY)) {
+      localStorage.setItem(LOCAL_STORAGE_GLOBAL_LOGS_KEY, JSON.stringify([]));
+    }
+
     const activeSessionToken = localStorage.getItem(LOCAL_STORAGE_SESSION_KEY);
     const savedTheme = localStorage.getItem('krishiSenseTheme');
     
@@ -560,100 +670,243 @@
     }
 
     if (activeSessionToken) {
-      launchDashboardShell();
+      launchDashboardShell(activeSessionToken);
     } else {
       shutdownDashboardShell();
     }
   })();
 
-  // Authentication Switch Toggles
   function toggleAuthPortalMode() {
     const title = document.getElementById('authDisplayTitle');
     const desc = document.getElementById('authDisplayDesc');
     const toggleLink = document.getElementById('authToggleModeLink');
     const submitBtn = document.getElementById('authSubmitBtn');
+    const nameField = document.getElementById('registrationNameField');
+    const usernameLabel = document.getElementById('usernameFieldLabel');
+    const usernameInput = document.getElementById('authUsername');
+
+    // Soft reset OTP step view if toggled midway
+    document.getElementById('authForm').style.display = 'block';
+    document.getElementById('otpVerificationForm').style.display = 'none';
 
     if (currentAuthMode === 'login') {
       currentAuthMode = 'register';
       title.textContent = "Register Plot Hub";
       desc.textContent = "Deploy an administrative agronomic access key";
-      submitBtn.innerHTML = "📝 Initialize Account";
+      usernameLabel.textContent = "Mobile Number";
+      usernameInput.placeholder = "e.g. 9876543210";
+      usernameInput.type = "tel";
+      usernameInput.pattern = "[0-9]{10}";
+      submitBtn.innerHTML = "📝 Initialize Account & Send OTP";
       toggleLink.textContent = "Already have an account? Login here";
+      nameField.style.display = 'block';
+      document.getElementById('authFullName').required = true;
     } else {
       currentAuthMode = 'login';
       title.textContent = "Farmer Login";
       desc.textContent = "Access your predictive agronomic dashboard";
-      submitBtn.innerHTML = "🔓 Verify Identity";
+      usernameLabel.textContent = "Mobile Number / Admin ID";
+      usernameInput.placeholder = "e.g. 9876543210 or admin";
+      usernameInput.type = "text";
+      usernameInput.removeAttribute("pattern");
+      submitBtn.innerHTML = "🔓 Request 2FA OTP Secure Token";
       toggleLink.textContent = "Need an account? Register Plot Hub";
+      nameField.style.display = 'none';
+      document.getElementById('authFullName').required = false;
     }
   }
 
-  // Intercept Form Submission and Run Authentication Pipeline
   function executeAuthAction(e) {
     e.preventDefault();
     const user = document.getElementById('authUsername').value.trim();
     const pass = document.getElementById('authPassword').value;
+    const fullName = document.getElementById('authFullName').value.trim();
 
     if (!user || !pass) return;
 
-    if (currentAuthMode === 'login') {
-      // Prototype Credentials Check (Accepts 'admin' / 'admin' or any account cached during registration)
-      const registeredUsersRaw = localStorage.getItem('krishiSenseRegisteredUsers') || '{"admin":"admin"}';
-      const userDatabase = JSON.parse(registeredUsersRaw);
+    const userDatabase = JSON.parse(localStorage.getItem(LOCAL_STORAGE_USERS_KEY));
 
-      if (userDatabase[user] && userDatabase[user] === pass) {
-        localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, user);
-        launchDashboardShell();
+    if (currentAuthMode === 'login') {
+      if (userDatabase[user] && userDatabase[user].password === pass) {
+        dispatch2FATokenGate(user);
       } else {
-        alert("⚠️ Authentication Rejected: Invalid Identity Context or Token Key.");
+        alert("⚠️ Authentication Rejected: Invalid Mobile Number or Passkey Verification Failure.");
       }
     } else {
-      // Registration flow caching
-      const registeredUsersRaw = localStorage.getItem('krishiSenseRegisteredUsers') || '{"admin":"admin"}';
-      const userDatabase = JSON.parse(registeredUsersRaw);
-
-      if (userDatabase[user]) {
-        alert("⚠️ Conflict Error: Username already maps to an active plot configuration.");
+      // Input verification safeguard to ensure valid registration format
+      if (!/^\d{10}$/.test(user)) {
+        alert("⚠️ Validation Error: Registration requires a valid 10-digit mobile number layout.");
         return;
       }
 
-      userDatabase[user] = pass;
-      localStorage.setItem('krishiSenseRegisteredUsers', JSON.stringify(userDatabase));
-      localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, user);
-      alert("🎉 Security Key Generated Successfully!");
-      launchDashboardShell();
+      if (userDatabase[user]) {
+        alert("⚠️ Conflict Error: Mobile Number already maps to an active plot configuration.");
+        return;
+      }
+      
+      userDatabase[user] = {
+        password: pass,
+        name: fullName || "Unnamed Farmer Plot"
+      };
+      
+      localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(userDatabase));
+      alert("🎉 Security Profile Provisioned! Sending authentication handshake request...");
+      dispatch2FATokenGate(user);
     }
   }
 
-  function launchDashboardShell() {
+  // Dynamic Mobile SMS Broadcast Engine Node Simulation
+  function dispatch2FATokenGate(username) {
+    activeAuthPendingUsername = username;
+    
+    // Generate randomized 6-digit verification code string
+    generatedSystemOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Adjust UI elements dynamically
+    document.getElementById('authForm').style.display = 'none';
+    document.getElementById('otpVerificationForm').style.display = 'block';
+    document.getElementById('authToggleModeLink').style.display = 'none';
+    document.getElementById('otpInputField').value = '';
+
+    // Mask phone output string safely inside banner details 
+    const isSpecialAdmin = username === 'admin';
+    const traceMaskTarget = isSpecialAdmin ? "System Admin Channel" : `+91 XXXXX-${username.slice(-5)}`;
+    document.getElementById('otpSimulationText').innerHTML = `<strong>[SIMULATION] SMS Gateway Dispatched.</strong> Token broadcasted to <u>${traceMaskTarget}</u>.`;
+
+    // Fire browser push frame alert payload simulation
+    setTimeout(() => {
+      alert(`📱 [SMS REAL-TIME GATEWAY] KrishiSense Security Check OTP: ${generatedSystemOTP}\nSent to profile identifier: ${username}`);
+    }, 400);
+  }
+
+  function validateSecurityOTP(e) {
+    e.preventDefault();
+    const inputToken = document.getElementById('otpInputField').value.trim();
+
+    if (inputToken === generatedSystemOTP) {
+      const authorizedUser = activeAuthPendingUsername;
+      
+      generatedSystemOTP = null;
+      activeAuthPendingUsername = null;
+      
+      document.getElementById('authForm').style.display = 'block';
+      document.getElementById('otpVerificationForm').style.display = 'none';
+      document.getElementById('authToggleModeLink').style.display = 'block';
+
+      localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, authorizedUser);
+      launchDashboardShell(authorizedUser);
+    } else {
+      alert("❌ Verification Failed: Code mismatch. Check your simulation notification string.");
+    }
+  }
+
+  function launchDashboardShell(username) {
     document.getElementById('screen-auth-gateway').style.display = 'none';
-    document.getElementById('appProgressBar').style.display = 'flex';
     document.getElementById('appMainContainer').style.display = 'block';
     document.getElementById('logoutBtn').style.display = 'flex';
     
-    // Clear input credentials inputs
+    if (username === 'admin') {
+      document.getElementById('adminToggleViewBtn').style.display = 'flex';
+      triggerAdminConsoleSync();
+      toggleAdminViewMode('admin'); 
+    } else {
+      document.getElementById('adminToggleViewBtn').style.display = 'none';
+      document.getElementById('appProgressBar').style.display = 'flex';
+      setUIVewport('screen-upload');
+    }
+
     document.getElementById('authUsername').value = '';
     document.getElementById('authPassword').value = '';
-
+    document.getElementById('authFullName').value = '';
     renderScanHistoryList();
-    setUIVewport('screen-upload');
+  }
+
+  function toggleAdminViewMode(explicitTarget) {
+    const targetMode = explicitTarget || (currentAdminViewActiveMode === 'app' ? 'admin' : 'app');
+    const toggleBtn = document.getElementById('adminToggleViewBtn');
+    
+    if (targetMode === 'admin') {
+      currentAdminViewActiveMode = 'admin';
+      toggleBtn.textContent = "🌾 View Scanner";
+      document.getElementById('appProgressBar').style.display = 'none';
+      
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-admin-dashboard').classList.add('active');
+      triggerAdminConsoleSync();
+    } else {
+      currentAdminViewActiveMode = 'app';
+      toggleBtn.textContent = "📊 View Console";
+      document.getElementById('appProgressBar').style.display = 'flex';
+      setUIVewport('screen-upload');
+    }
+  }
+
+  function triggerAdminConsoleSync() {
+    const userDatabase = JSON.parse(localStorage.getItem(LOCAL_STORAGE_USERS_KEY) || '{}');
+    const globalLogs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_GLOBAL_LOGS_KEY) || '[]');
+    
+    const totalUsers = Object.keys(userDatabase).length;
+    const totalScans = globalLogs.length;
+
+    document.getElementById('admMetricUsers').textContent = totalUsers;
+    document.getElementById('admMetricScans').textContent = totalScans;
+
+    const userScanCounts = {};
+    Object.keys(userDatabase).forEach(u => userScanCounts[u] = 0);
+    globalLogs.forEach(log => {
+      if(userScanCounts[log.userContext] !== undefined) userScanCounts[log.userContext]++;
+    });
+
+    // Populate updated Mobile / ID Table Registry
+    const userTableBody = document.getElementById('adminUserTableBody');
+    userTableBody.innerHTML = Object.keys(userDatabase).map(userKey => {
+      const accountData = userDatabase[userKey];
+      const assignedName = typeof accountData === 'object' ? accountData.name : "Legacy User Profile";
+      const assignedPass = typeof accountData === 'object' ? accountData.password : accountData;
+
+      return `
+        <tr>
+          <td><code>${userKey}</code> ${userKey === 'admin' ? '👑' : '📱'}</td>
+          <td><strong>${assignedName}</strong></td>
+          <td><span class="pass-reveal">${assignedPass}</span></td>
+          <td>${userScanCounts[userKey] || 0} diagnostics run</td>
+        </tr>
+      `;
+    }).join('');
+
+    // Sync Audit Logs
+    const logsTableBody = document.getElementById('adminLogsTableBody');
+    if(globalLogs.length === 0) {
+      logsTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No logs documented in active stream session.</td></tr>`;
+    } else {
+      logsTableBody.innerHTML = globalLogs.map(log => `
+        <tr>
+          <td style="font-size:11.5px; color:var(--text-muted);">${log.timestamp}</td>
+          <td><code>${log.userContext}</code></td>
+          <td>🌾 ${log.cropName}</td>
+          <td><span class="history-badge status-${log.status}" style="padding:2px 6px; font-size:11px;">${log.status.toUpperCase()}</span></td>
+        </tr>
+      `).join('');
+    }
   }
 
   function terminateSession() {
-    if(confirm("Terminate agronomic dashboard authentication layer?")) {
+    if(confirm("Terminate agronomic dashboard session encryption layers?")) {
       localStorage.removeItem(LOCAL_STORAGE_SESSION_KEY);
       shutdownDashboardShell();
     }
   }
 
   function shutdownDashboardShell() {
+    currentAdminViewActiveMode = 'app';
+    if(currentAuthMode === 'register') toggleAuthPortalMode(); // Soft toggle to default login form
     document.getElementById('screen-auth-gateway').style.display = 'block';
     document.getElementById('appProgressBar').style.display = 'none';
     document.getElementById('appMainContainer').style.display = 'none';
     document.getElementById('logoutBtn').style.display = 'none';
+    document.getElementById('adminToggleViewBtn').style.display = 'none';
   }
 
-  // Theme Management
   function toggleAppTheme() {
     const isDark = document.body.classList.toggle('dark-theme');
     localStorage.setItem('krishiSenseTheme', isDark ? 'dark' : 'light');
@@ -666,7 +919,6 @@
     if (btn) btn.innerHTML = isDark ? '☀️' : '🌙';
   }
 
-  // Core Application Flow Controls
   function handleImageFile(event) {
     const imgFile = event.target.files[0];
     if (!imgFile) return;
@@ -681,6 +933,7 @@
   }
 
   function setUIVewport(viewportId) {
+    document.getElementById('screen-admin-dashboard').classList.remove('active');
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const targetedScreen = document.getElementById(viewportId);
     if(targetedScreen) targetedScreen.classList.add('active');
@@ -710,6 +963,7 @@
       });
       if (!upstreamResponse.ok) throw new Error("Establish AgAI connection failed.");
       const telemetryData = await upstreamResponse.json();
+      
       saveScanRecordToHistory(telemetryData);
       injectTelemetryIntoDashboard(telemetryData);
       setUIVewport('screen-results');
@@ -739,9 +993,6 @@
     document.getElementById('y_total').textContent = payload.yield.total || '0';
     document.getElementById('y_rev').textContent = `₹${payload.yield.revenue_lakh || payload.yield.revenueLakh || '0'}L`;
     document.getElementById('y_desc').textContent = payload.yield.description || payload.yield.desc || '';
-
-    document.getElementById('mktCropHeader').textContent = `${payload.diagnosis.cropName || 'Crop'} Mandi Forecast`;
-    document.getElementById('mktDesc').textContent = payload.price_forecast.description || payload.price_forecast.desc || '--';
 
     document.getElementById('mktListContainer').innerHTML = (payload.price_forecast.markets || []).map(m => `
       <div class="market-item">
@@ -783,18 +1034,24 @@
     });
   }
 
-  // History Caching Routines
   function saveScanRecordToHistory(payload) {
     try {
-      const historyRaw = localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY);
-      let historyArr = historyRaw ? JSON.parse(historyRaw) : [];
+      const activeUser = localStorage.getItem(LOCAL_STORAGE_SESSION_KEY) || 'anonymous';
       const currentStamp = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
+      const historyRaw = localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY);
+      let historyArr = historyRaw ? JSON.parse(historyRaw) : [];
       historyArr.unshift({ id: Date.now(), timestamp: currentStamp, cropName: payload.diagnosis.cropName || 'Unknown Plot', disease: payload.diagnosis.disease || 'Analyzed', status: payload.diagnosis.status || 'warning', payload });
       if (historyArr.length > 8) historyArr = historyArr.slice(0, 8);
       localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify(historyArr));
+
+      const globalLogsRaw = localStorage.getItem(LOCAL_STORAGE_GLOBAL_LOGS_KEY) || '[]';
+      let globalLogsArr = JSON.parse(globalLogsRaw);
+      globalLogsArr.unshift({ timestamp: currentStamp, userContext: activeUser, cropName: payload.diagnosis.cropName || 'Unknown Crop', status: payload.diagnosis.status || 'warning' });
+      localStorage.setItem(LOCAL_STORAGE_GLOBAL_LOGS_KEY, JSON.stringify(globalLogsArr));
+
       renderScanHistoryList();
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Logger trace failure:", e); }
   }
 
   function renderScanHistoryList() {
