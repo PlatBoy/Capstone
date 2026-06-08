@@ -53,7 +53,6 @@
             <select id="regionSelect"><option>Zone A</option><option>Zone B</option></select>
             <select id="soilSelect"><option>Clay</option><option>Loam</option><option>Sandy</option></select>
             <input type="number" id="farmSizeInput" placeholder="Acres">
-            
             <div id="previewContainer" style="display:none;">
                 <img id="imagePreview" style="max-width:200px;">
                 <button onclick="initiateAnalysis()">Analyze</button>
@@ -96,7 +95,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
-        // --- 1. GLOBAL SCOPE: All functions go here so buttons can see them ---
+        // --- 1. GLOBAL SCOPE (Functions here are visible to buttons) ---
+        
         class HandshakeRequest {
             constructor(username, password, fullName, mode) {
                 this.username = username;
@@ -125,26 +125,34 @@
 
         function executeAuthAction(e) {
             e.preventDefault();
-            console.log("Auth action triggered!");
-            // ... (Add your logic from previous script here)
+            console.log("Auth Triggered");
+            // ... [Insert all your previous logic here]
+        }
+
+        function toggleAuthPortalMode() {
+            // ... [Insert logic here]
         }
 
         function validateSecurityOTP(e) {
             e.preventDefault();
-            // ... (Add your logic from previous script here)
+            // ... [Insert logic here]
         }
 
-        function toggleAuthPortalMode() {
-            // ... (Add your logic from previous script here)
-        }
+        function handleImageFile(e) { /* ... */ }
+        function initiateAnalysis() { /* ... */ }
+        function terminateSession() { /* ... */ }
+        function toggleAdminViewMode() { /* ... */ }
+        function toggleAppTheme() { /* ... */ }
+        function clearCachedScans() { /* ... */ }
+        function returnToScanScreen() { /* ... */ }
+        
+        // ... (Paste the rest of your core logic functions here)
 
-        // Add ALL your other functions (initiateAnalysis, launchDashboardShell, etc.) here.
-
-        // --- 2. INITIALIZATION: Runs once on page load ---
+        // --- 2. INITIALIZATION (Runs once on load) ---
         document.addEventListener("DOMContentLoaded", () => {
             console.log("App Initialized");
-            
-            // Logic for first-time setup
+
+            // Setup default storage if empty
             if (!localStorage.getItem(LOCAL_STORAGE_USERS_KEY)) {
                 localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify({ 
                     "admin": { password: "admin", name: "System Administrator" }, 
@@ -152,8 +160,11 @@
                 }));
             }
             
-            // Trigger your setup function here
-            // initializeAppGateway();
+            // Check session
+            const activeSessionToken = localStorage.getItem(LOCAL_STORAGE_SESSION_KEY);
+            if (activeSessionToken) {
+                // launchDashboardShell(JSON.parse(activeSessionToken));
+            }
         });
     </script>
 </body>
