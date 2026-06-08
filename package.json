@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'Static deployment'",
-    "start": "echo 'Vercel handles deployment'"
+    "build": "echo 'Python-based deployment'",
+    "start": "python main.py"
   },
   "keywords": ["agriculture", "ai", "crop-analysis", "farming"],
   "author": "PlatBoy",
