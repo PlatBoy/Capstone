@@ -7,7 +7,7 @@ from twilio.rest import Client
 
 app = FastAPI(title="KrishiSense Backend Engine")
 
-# Enable CORS so your frontend can communicate with this API seamlessly
+# Enable CORS for frontend communication
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,13 +17,14 @@ app.add_middleware(
 )
 
 # Simulated databases
+# NOTE: In a serverless environment, these variables are volatile!
+# They will reset whenever the serverless function "cold starts."
 USER_DATABASE = {
     "admin": { "password": "admin", "name": "System Administrator" },
     "9876543210": { "password": "mumbai2026", "name": "Rajesh Kumar" }
 }
 OTP_REGISTRY = {}
 
-# 1. FIXED: Added optional fields to prevent 422 validation errors
 class HandshakeRequest(BaseModel):
     username: str
     password: str
@@ -34,10 +35,9 @@ class VerifyOTPRequest(BaseModel):
     username: str
     otp: str
 
-# 2. FIXED: Explicitly added the "/api" prefix to match vercel.json rewrites
 @app.post("/api/auth/request-otp")
 async def request_otp(data: HandshakeRequest):
-    # Verify user exists in mock DB
+    # Verify user existence
     if data.username not in USER_DATABASE or USER_DATABASE[data.username]["password"] != data.password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -48,7 +48,7 @@ async def request_otp(data: HandshakeRequest):
     otp_code = f"{random.randint(100000, 999999)}"
     OTP_REGISTRY[data.username] = otp_code
     
-    # Twilio Integration Block
+    # Twilio Integration
     account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
     auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
     twilio_number = os.environ.get("TWILIO_PHONE_NUMBER")
@@ -62,17 +62,16 @@ async def request_otp(data: HandshakeRequest):
                 to=data.username if data.username.startswith("+") else f"+91{data.username}"
             )
             return {"status": "success", "message": "OTP sent via Twilio SMS."}
-        except Exception as e:
-            # Fallback if Twilio fails/credentials error out
+        except Exception:
             return {"status": "sandbox", "message": "Twilio failed. Sandbox bypass active.", "otp": otp_code}
-    else:
-        # Clear fallback printing the OTP directly to the screen layout if keys aren't set
-        return {"status": "sandbox", "message": "Running in Sandbox Mode.", "otp": otp_code}
+    
+    return {"status": "sandbox", "message": "Running in Sandbox Mode.", "otp": otp_code}
 
 @app.post("/api/auth/verify-otp")
 async def verify_otp(data: VerifyOTPRequest):
+    # Validate OTP
     if data.username in OTP_REGISTRY and OTP_REGISTRY[data.username] == data.otp:
-        del OTP_REGISTRY[data.username]  # Clear OTP after successful use
+        del OTP_REGISTRY[data.username] 
         return {
             "status": "success", 
             "message": "2FA Authentication Verified.", 
