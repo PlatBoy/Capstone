@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from twilio.rest import Client
+from fastapi.responses import FileResponse # Import this for serving HTML
 
 app = FastAPI(title="KrishiSense Backend Engine")
 
@@ -16,9 +17,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Root route - THIS FIXES THE 404
+@app.get("/")
+async def serve_index():
+    return FileResponse("index.html")
+
 # Simulated databases
-# NOTE: In a serverless environment, these variables are volatile!
-# They will reset whenever the serverless function "cold starts."
 USER_DATABASE = {
     "admin": { "password": "admin", "name": "System Administrator" },
     "9876543210": { "password": "mumbai2026", "name": "Rajesh Kumar" }
@@ -37,18 +41,15 @@ class VerifyOTPRequest(BaseModel):
 
 @app.post("/api/auth/request-otp")
 async def request_otp(data: HandshakeRequest):
-    # Verify user existence
     if data.username not in USER_DATABASE or USER_DATABASE[data.username]["password"] != data.password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password"
         )
     
-    # Generate 6-digit OTP
     otp_code = f"{random.randint(100000, 999999)}"
     OTP_REGISTRY[data.username] = otp_code
     
-    # Twilio Integration
     account_sid = os.environ.get("TWILIO_ACCOUNT_SID")
     auth_token = os.environ.get("TWILIO_AUTH_TOKEN")
     twilio_number = os.environ.get("TWILIO_PHONE_NUMBER")
@@ -69,7 +70,6 @@ async def request_otp(data: HandshakeRequest):
 
 @app.post("/api/auth/verify-otp")
 async def verify_otp(data: VerifyOTPRequest):
-    # Validate OTP
     if data.username in OTP_REGISTRY and OTP_REGISTRY[data.username] == data.otp:
         del OTP_REGISTRY[data.username] 
         return {
