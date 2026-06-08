@@ -1,9 +1,12 @@
+Here is the updated code with the **"Soil-to-Shelf AI Engine"** text completely removed from both the topbar header and the browser title bar.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KrishiSense — Soil-to-Shelf AI</title>
+<title>KrishiSense</title>
 <style>
   /* Global Modern Farm Aesthetics */
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;700&display=swap');
@@ -11,22 +14,46 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    /* Pure White and Deep Farm Greens Palette */
+    /* Pure White and Deep Farm Greens Palette (Light Mode Default) */
     --white: #ffffff;
-    --farm-deep: #166534;    /* Main text and anchors */
-    --farm-mid: #15803d;     /* Primary buttons, active states */
-    --farm-light: #22c55e;   /* Positive accents, high confidence */
-    --farm-pale: #f0fdf4;    /* Sage-tinted background blocks */
-    --yellow-mid: #eab308;
-    --red-mid: #dc2626;
-    --amber-pale: #fef3c7;   /* Light amber for warning badges */
-
-    /* Text & UI elements */
+    --page-bg: #fdfdfd;      /* Slightly warm off-white */
     --text-primary: #111827; /* Near black */
     --text-muted: #6b7280;   /* Muted grey */
     --border: #e5e7eb;       /* Subtle dividers */
     
-    --page-bg: #fdfdfd;      /* Slightly warm off-white */
+    --farm-topbar: #166534;  /* Forest Topbar background */
+    --farm-deep: #166534;    /* Main text headers and anchors */
+    --farm-mid: #15803d;     /* Primary buttons, active states */
+    --farm-light: #22c55e;   /* Positive accents, high confidence */
+    --farm-pale: #f0fdf4;    /* Sage-tinted background blocks */
+    
+    --yellow-mid: #eab308;
+    --red-mid: #dc2626;
+    --amber-pale: #fef3c7;   /* Light amber for warning badges */
+
+    /* Chart Overrides */
+    --chart-grid: rgba(0, 0, 0, 0.04);
+    --chart-text: #6b7280;
+  }
+
+  /* Deep Forest Dark Mode Variant Configuration */
+  body.dark-theme {
+    --white: #161d2a;        /* Sleek card containers */
+    --page-bg: #0b0f17;      /* Muted obsidian background ground level */
+    --text-primary: #f9fafb; /* Off-white highly scannable prose */
+    --text-muted: #9ca3af;   /* Ground silver text elements */
+    --border: #242f41;       /* Low-contrast geometric grids */
+    
+    --farm-topbar: #0c4a23;  /* Sunk forest top bar */
+    --farm-deep: #4ade80;    /* Vibrant glowing mint headers */
+    --farm-mid: #22c55e;     /* Solid interaction surfaces */
+    --farm-light: #4ade80;   /* Vibrant plant accents */
+    --farm-pale: #14231a;    /* Highly targeted deep field container fills */
+    
+    --amber-pale: #2c2514;   /* Deep charcoal amber background metrics */
+
+    --chart-grid: rgba(255, 255, 255, 0.06);
+    --chart-text: #9ca3af;
   }
 
   body {
@@ -35,28 +62,52 @@
     color: var(--text-primary);
     min-height: 100vh;
     overflow-x: hidden;
+    transition: background 0.3s ease, color 0.3s ease;
   }
 
   /* Deep Green Minimal Topbar */
   .topbar {
-    background: var(--farm-deep);
+    background: var(--farm-topbar);
     padding: 16px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    transition: background 0.3s ease;
   }
   .topbar-logo {
     font-family: 'Sora', sans-serif;
     font-size: 22px;
     font-weight: 700;
-    color: var(--white);
+    color: #ffffff;
     letter-spacing: -0.5px;
   }
   .topbar-logo span { color: #86efac; }
-  .topbar-sub {
-    font-size: 13px;
-    color: rgba(255,255,255,0.7);
-    font-weight: 400;
+  
+  .topbar-right-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  /* Theme Switcher Button UI */
+  .theme-toggle-btn {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Sora', sans-serif;
+    transition: all 0.2s ease;
+  }
+  .theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: #86efac;
   }
 
   /* Flat, Spacious Steps Row */
@@ -67,6 +118,7 @@
     display: flex;
     justify-content: center;
     gap: 12px;
+    transition: background 0.3s ease, border-color 0.3s ease;
   }
   .step-pill {
     font-size: 13px;
@@ -89,14 +141,18 @@
   .step-num {
     width: 22px; height: 22px;
     background: #f3f4f6;
-    color: var(--text-muted);
+    color: #6b7280;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 12px; font-weight: 700;
   }
+  body.dark-theme .step-num {
+    background: #1f293d;
+    color: var(--text-muted);
+  }
   .step-pill.active .step-num {
-    background: var(--farm-deep);
-    color: var(--white);
+    background: var(--farm-mid);
+    color: #ffffff;
   }
 
   /* Centered, Minimalistic Layout */
@@ -138,10 +194,10 @@
     padding: 48px 24px;
     text-align: center;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, border-color 0.2s;
     margin-bottom: 24px;
   }
-  .upload-zone:hover { background: #dcfce7; border-color: var(--farm-light); }
+  .upload-zone:hover { background: var(--farm-pale); border-color: var(--farm-light); }
   .upload-zone h3 { font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 600; color: var(--farm-deep); margin-top: 16px; }
   .upload-zone p { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
 
@@ -161,11 +217,11 @@
     background: rgba(255,255,255,0.9);
     border: none; border-radius: 20px;
     padding: 6px 14px;
-    font-size: 12px; font-weight: 600; color: var(--farm-deep);
+    font-size: 12px; font-weight: 600; color: #166534;
     cursor: pointer;
   }
 
-  /* White rounded inputs on white background */
+  /* rounded inputs on contextual canvas backgrounds */
   .farm-input {
     width: 100%;
     background: var(--white);
@@ -176,12 +232,13 @@
     font-family: 'DM Sans', sans-serif;
     color: var(--text-primary);
     outline: none;
-    transition: all 0.2s ease;
+    transition: all 0.2s ease, background 0.3s ease, border-color 0.3s ease;
   }
-  .farm-input:focus { border-color: var(--farm-light); box-shadow: 0 0 0 3px #dcfce7; }
+  .farm-input:focus { border-color: var(--farm-light); box-shadow: 0 0 0 3px var(--farm-pale); }
+  
   select.farm-input { 
     appearance: none; 
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23166534'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 14l-7 7m0 0l-7-7m7 7V3'%3E%3C/path%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2322c55e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 14l-7 7m0 0l-7-7m7 7V3'%3E%3C/path%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 18px;
@@ -201,7 +258,7 @@
     width: 100%;
     padding: 18px;
     background: var(--farm-mid);
-    color: var(--white);
+    color: #ffffff;
     border: none;
     border-radius: 14px;
     font-family: 'Sora', sans-serif;
@@ -211,7 +268,7 @@
     transition: background 0.2s ease, transform 0.1s ease;
     display: flex; align-items: center; justify-content: center; gap: 10px;
   }
-  .analyze-btn:hover { background: var(--farm-deep); }
+  .analyze-btn:hover { background: var(--farm-deep); color: #ffffff; }
   .analyze-btn:active { transform: translateY(1px); }
 
   /* Processing Core Spinner */
@@ -224,7 +281,7 @@
   }
   .spinner {
     width: 50px; height: 50px;
-    border: 4px solid #e5e7eb;
+    border: 4px solid var(--border);
     border-top-color: var(--farm-mid);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -242,6 +299,7 @@
     overflow: hidden;
     margin-bottom: 20px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    transition: background 0.3s ease, border-color 0.3s ease;
   }
   .card-header {
     padding: 20px 24px;
@@ -265,15 +323,16 @@
     margin-bottom: 16px;
   }
   .status-healthy { background: #dcfce7; color: #166534; }
-  .status-warning { background: var(--amber-pale); color: #92400e; }
+  .status-warning { background: var(--amber-pale); color: #eab308; }
+  body.dark-theme .status-warning { color: #f59e0b; }
   .status-danger { background: #fee2e2; color: #991b1b; }
 
   /* Confidence flat bar */
   .conf-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-size: 13px; color: var(--text-muted); }
-  .conf-bar-container { flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
-  .conf-bar-fill { height: 100%; background: var(--farm-light); border-radius: 4px; width: 0%; transition: width 1s ease; }
+  .conf-bar-container { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .conf-bar-fill { height: 100%; background: var(--farm-mid); border-radius: 4px; width: 0%; transition: width 1s ease; }
 
-  .prose { font-size: 14px; line-height: 1.6; color: #333; }
+  .prose { font-size: 14px; line-height: 1.6; color: var(--text-primary); }
   .prose strong { color: var(--farm-deep); font-weight: 700; }
 
   /* Yield Grid - Minimalist */
@@ -288,14 +347,14 @@
     border-radius: 14px;
     padding: 20px 16px;
     text-align: center;
-    border: 1px solid #dcfce7;
+    border: 1px solid var(--border);
   }
   .yield-val { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; color: var(--farm-deep); }
   .yield-label { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-top: 6px; line-height: 1.3; }
 
   /* Market pricing - minimalist chart & list */
   .chart-wrap { margin-bottom: 20px; }
-  .price-chart-wrap { background: #fff; border-radius: 14px; padding: 12px; }
+  .price-chart-wrap { background: var(--white); border-radius: 14px; padding: 12px; }
 
   .market-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .market-item {
@@ -303,13 +362,15 @@
     padding: 16px;
     border-radius: 14px;
     display: flex; align-items: center; justify-content: space-between;
-    border: 1px solid rgba(0,0,0,0.02);
+    border: 1px solid var(--border);
   }
   .market-name-row { font-size: 13px; color: var(--text-muted); font-weight: 500; margin-bottom: 2px;}
   .market-price { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: var(--farm-deep); }
   .trend-box { font-size: 11px; font-weight: 700; border-radius: 4px; padding: 2px 6px; }
-  .trend-up { color: var(--farm-deep); background: #dcfce7; }
+  .trend-up { color: #166534; background: #dcfce7; }
+  body.dark-theme .trend-up { color: #4ade80; background: #064e3b; }
   .trend-down { color: #991b1b; background: #fee2e2; }
+  body.dark-theme .trend-down { color: #f87171; background: #7f1d1d; }
 
   /* Weather Ribbon */
   .weather-ribbon {
@@ -320,8 +381,14 @@
     margin-bottom: 24px;
     border: 1px solid #bae6fd;
   }
+  body.dark-theme .weather-ribbon {
+    background: #0c253a;
+    border-color: #075985;
+  }
   .w-temp { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; color: #0369a1; }
+  body.dark-theme .w-temp { color: #38bdf8; }
   .w-details { flex: 1; font-size: 14px; color: #075985; line-height: 1.4; }
+  body.dark-theme .w-details { color: #bae6fd; }
 
   /* Recommendation Checklist */
   .tips-list { list-style: none; }
@@ -333,7 +400,7 @@
     display: flex; align-items: flex-start; gap: 12px;
   }
   .tips-list li:last-child { border-bottom: none; }
-  .check-icon { color: var(--farm-light); font-weight: bold; margin-top: 2px; }
+  .check-icon { color: var(--farm-mid); font-weight: bold; margin-top: 2px; }
 
   .reset-btn {
     width: 100%;
@@ -355,10 +422,13 @@
 
 <div class="topbar">
   <div class="topbar-logo">Krishi<span>Sense</span></div>
-  <div class="topbar-sub">Soil-to-Shelf AI Engine</div>
+  <div class="topbar-right-controls">
+    <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleAppTheme()">
+      🌙 Dark Mode
+    </button>
+  </div>
 </div>
 
-<!-- Step Progress -->
 <div class="steps-row">
   <div class="step-pill active" id="stepPill-upload">
     <div class="step-num">1</div>
@@ -376,13 +446,11 @@
 
 <div class="main">
 
-  <!-- SCREEN 1: UPLOAD & PARAMETERS -->
   <div class="screen active" id="screen-upload">
     
     <div class="field-box">
       <h2 class="section-label">📷 Crop Imagery Matrix</h2>
       
-      <!-- Upload Zone -->
       <div class="upload-zone" id="uploadDropZone" onclick="document.getElementById('imgInput').click()">
         <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImageFile(event)">
         <div style="font-size:40px;">🌿</div>
@@ -390,14 +458,12 @@
         <p>Close-up of leaves, soil texture, or field panorama</p>
       </div>
 
-      <!-- Preview -->
       <div class="preview-img-container" id="previewContainer">
         <img id="imagePreview" src="#" class="preview-img" alt="Crop Preview" />
         <button class="change-img-btn" onclick="document.getElementById('imgInput').click()">Change</button>
       </div>
     </div>
 
-    <!-- Params Grid -->
     <h2 class="section-label">🌱 Agronomic Parameters</h2>
     <div class="params-grid">
       <div class="field-box">
@@ -441,7 +507,6 @@
     </button>
   </div>
 
-  <!-- SCREEN 2: PROCESSING (SPINNER) -->
   <div class="screen" id="screen-process">
     <div class="processing-container">
       <div class="spinner"></div>
@@ -450,10 +515,8 @@
     </div>
   </div>
 
-  <!-- SCREEN 3: RESULTS DASHBOARD -->
   <div class="screen" id="screen-results">
     
-    <!-- Weather Ribbon -->
     <div class="weather-ribbon">
       <div style="font-size:30px;">🌤️</div>
       <div class="w-temp" id="w_temp">32°C</div>
@@ -461,9 +524,6 @@
       <div style="font-size: 12px; color: #0369a1; font-weight: 700;" id="w_humidity">RH: 64%</div>
     </div>
 
-    <!-- Cards Layout -->
-    
-    <!-- Card 1: Diagnosis -->
     <div class="dashboard-card">
       <div class="card-header">
         <div class="card-icon" style="background: #dcfce7; color: #166534; padding: 10px; border-radius: 12px;">🔬</div>
@@ -483,7 +543,6 @@
       </div>
     </div>
 
-    <!-- Card 2: Yield Matrix -->
     <div class="dashboard-card">
       <div class="card-header">
         <div class="card-icon" style="background: #fef3c7; color: #92400e; padding: 10px; border-radius: 12px;">📊</div>
@@ -511,7 +570,6 @@
       </div>
     </div>
 
-    <!-- Card 3: Market Intelligence -->
     <div class="dashboard-card">
       <div class="card-header">
         <div class="card-icon" style="background: #e0f2fe; color: #0369a1; padding: 10px; border-radius: 12px;">💰</div>
@@ -526,12 +584,10 @@
         </div>
         <p class="prose" style="margin-bottom: 20px;" id="mktDesc">Selling Option: Volume spikes are expected on Day 21, driving short-term volatility. Hold until Day 28 for peak returns.</p>
         <div class="market-list" id="mktListContainer">
-          <!-- Markets injected here -->
-        </div>
+          </div>
       </div>
     </div>
 
-    <!-- Card 4: Action Ledger -->
     <div class="dashboard-card">
       <div class="card-header">
         <div class="card-icon" style="background: #f3e8ff; color: #6b21a8; padding: 10px; border-radius: 12px;">🌿</div>
@@ -542,8 +598,7 @@
       </div>
       <div class="card-body">
         <ul class="tips-list" id="recContainer">
-          <!-- Recommendations injected here -->
-        </ul>
+          </ul>
       </div>
     </div>
 
@@ -555,8 +610,40 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script>
   // State management
-  let imageBase64Payload = null; // The image token ready for backend transmission
+  let imageBase64Payload = null; 
   let chartObjectInstance = null;
+  let activeForecastPayloadCache = null; 
+
+  // Core Theme Switching Engine
+  function toggleAppTheme() {
+    const isDark = document.body.classList.toggle('dark-theme');
+    localStorage.setItem('krishiSenseTheme', isDark ? 'dark' : 'light');
+    updateThemeToggleButtonUI(isDark);
+    
+    if (activeForecastPayloadCache) {
+      loadFarmChart(activeForecastPayloadCache);
+    }
+  }
+
+  function updateThemeToggleButtonUI(isDark) {
+    const btn = document.getElementById('themeToggleBtn');
+    if (isDark) {
+      btn.innerHTML = '☀️ Light Mode';
+    } else {
+      btn.innerHTML = '🌙 Dark Mode';
+    }
+  }
+
+  // Initializer mapping theme configuration cache
+  (function initThemeCache() {
+    const savedTheme = localStorage.getItem('krishiSenseTheme');
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark-theme');
+      updateThemeToggleButtonUI(true);
+    } else {
+      updateThemeToggleButtonUI(false);
+    }
+  })();
 
   function handleImageFile(event) {
     const imgFile = event.target.files[0];
@@ -564,10 +651,8 @@
 
     const fileReader = new FileReader();
     fileReader.onload = (e) => {
-      // Store raw Base64 data for the final API payload
       imageBase64Payload = e.target.result.split(',')[1];
       
-      // Update minimalistic aesthetic preview frame
       document.getElementById('imagePreview').src = e.target.result;
       document.getElementById('previewContainer').style.display = 'block';
       document.getElementById('uploadDropZone').style.display = 'none';
@@ -576,11 +661,9 @@
   }
 
   function setUIVewport(viewportId) {
-    // Clean screen transitions
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(viewportId).classList.add('active');
 
-    // Minimalistic progress syncing
     const viewportSteps = { 'screen-upload': 'upload', 'screen-process': 'process', 'screen-results': 'results' };
     const stepName = viewportSteps[viewportId];
     
@@ -594,7 +677,6 @@
   }
 
   async function initiateAnalysis() {
-    // 1. Inputs validation & capture
     const crop = document.getElementById('cropSelect').value;
     const region = document.getElementById('regionSelect').value;
     const farmSize = parseFloat(document.getElementById('farmSizeInput').value) || 4;
@@ -605,13 +687,10 @@
       return;
     }
 
-    // 2. Lock UI & show modern farm loader
     setUIVewport('screen-process');
     updateProcessText("Connecting to AgAI Neuro-Core...", "Establishing handshakes with vision network nodes.");
 
     try {
-      // 3. Connect to the Live Backend Endpoint
-      // Note: This endpoint must point to your vercel.json mapping for /api/analyze.js
       const upstreamResponse = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -630,11 +709,7 @@
       }
 
       const telemetryData = await upstreamResponse.json();
-
-      // 4. Inject real-world AI data into minimalist cards
       injectTelemetryIntoDashboard(telemetryData);
-
-      // 5. Present the Agronomic Shelf Ledger
       setUIVewport('screen-results');
 
     } catch (HandshakeError) {
@@ -645,6 +720,8 @@
   }
 
   function injectTelemetryIntoDashboard(payload) {
+    activeForecastPayloadCache = payload.price_forecast;
+
     // WEATHER Ribbon
     document.getElementById('w_temp').textContent = payload.weather.temp || '--°C';
     document.getElementById('w_desc').textContent = payload.weather.desc || '--';
@@ -655,7 +732,6 @@
     const badge = document.getElementById('diagStatusBadge');
     badge.textContent = payload.diagnosis.disease || 'Analyzed';
     
-    // Normalize string constraints (healthy, warning, danger)
     let diagStyle = 'status-warning';
     if (payload.diagnosis.status === 'healthy') diagStyle = 'status-healthy';
     if (payload.diagnosis.status === 'danger') diagStyle = 'status-danger';
@@ -665,7 +741,7 @@
     document.getElementById('confBar').style.width = `${payload.diagnosis.confidence || '0'}%`;
     document.getElementById('diagDesc').textContent = payload.diagnosis.description || '--';
 
-    // YIELD Card (Maps API JSON structures efficiently)
+    // YIELD Card
     document.getElementById('y_perAcre').textContent = payload.yield.per_acre || payload.yield.perAcre || '0';
     document.getElementById('y_total').textContent = payload.yield.total || '0';
     document.getElementById('y_rev').textContent = `₹${payload.yield.revenue_lakh || payload.yield.revenueLakh || '0'}L`;
@@ -686,7 +762,7 @@
       </div>
     `).join('');
 
-    // Load dynamic minimalist financial graph component
+    // Load dynamic financial graph
     loadFarmChart(payload.price_forecast);
 
     // RECOMMENDATIONS LEDGER Container
@@ -701,6 +777,11 @@
       chartObjectInstance.destroy();
     }
 
+    const surfaceStyles = getComputedStyle(document.body);
+    const canvasGridColor = surfaceStyles.getPropertyValue('--chart-grid').trim();
+    const canvasTextColor = surfaceStyles.getPropertyValue('--chart-text').trim();
+    const accentGreenColor = surfaceStyles.getPropertyValue('--farm-mid').trim() || '#15803d';
+
     const ctx = document.getElementById('mktChart').getContext('2d');
     chartObjectInstance = new Chart(ctx, {
       type: 'line',
@@ -709,12 +790,12 @@
         datasets: [{
           label: `MSP Index (₹/${forecast.unit || 'qt'})`,
           data: [forecast.current_price, forecast['7day'], forecast['14day'], forecast['21day'], forecast['30day']],
-          borderColor: '#15803d', // Primary farm green
-          backgroundColor: 'rgba(21,128,61,0.04)', // Ultra subtle green tint
+          borderColor: accentGreenColor, 
+          backgroundColor: 'rgba(34, 197, 94, 0.04)', 
           borderWidth: 2.5,
           tension: 0.4,
           pointRadius: 4,
-          pointBackgroundColor: '#15803d',
+          pointBackgroundColor: accentGreenColor,
           fill: true
         }]
       },
@@ -724,12 +805,12 @@
         plugins: { legend: { display: false } },
         scales: {
           y: {
-            grid: { color: 'rgba(0,0,0,0.03)' }, // Invisible subtle grid
-            ticks: { font: { size: 10, weight: '700' }, color: '#6b7280' }
+            grid: { color: canvasGridColor }, 
+            ticks: { font: { size: 10, weight: '700' }, color: canvasTextColor }
           },
           x: {
             grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#6b7280' }
+            ticks: { font: { size: 10 }, color: canvasTextColor }
           }
         }
       }
@@ -738,6 +819,7 @@
 
   function returnToScanScreen() {
     imageBase64Payload = null;
+    activeForecastPayloadCache = null;
     document.getElementById('imagePreview').style.display = 'none';
     document.getElementById('imagePreview').src = '';
     document.getElementById('imgInput').value = '';
@@ -747,3 +829,5 @@
 </script>
 </body>
 </html>
+
+```
