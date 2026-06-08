@@ -335,30 +335,6 @@
   .trend-up { color: #16a34a; }
   .trend-down { color: #dc2626; }
 
-  .action-row {
-    display: flex;
-    gap: 10px;
-    margin-top: 16px;
-  }
-  .action-btn {
-    flex: 1;
-    padding: 12px;
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    background: #fff;
-    transition: all 0.15s;
-  }
-  .action-btn:hover { background: var(--green-pale); border-color: var(--green-light); }
-  .action-btn.primary { background: var(--green-mid); color: #fff; border-color: var(--green-mid); }
-  .action-btn.primary:hover { background: var(--green-deep); }
-
-  .prose { font-size: 13px; line-height: 1.7; color: var(--text); }
-  .prose strong { color: var(--green-deep); font-weight: 600; }
-
   .weather-strip {
     background: var(--sky-pale);
     border: 1px solid #bae6fd;
@@ -666,7 +642,8 @@ async function startAnalysis() {
     });
 
     if (!response.ok) {
-      throw new Error('Serverless engine processing failure');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Serverless engine routing failure.');
     }
 
     const result = await response.json();
@@ -675,7 +652,7 @@ async function startAnalysis() {
   } catch (err) {
     console.error(err);
     showScreen('screen-upload');
-    document.getElementById('upload-error').textContent = '⚠️ Analysis failed. Server configuration or network issue.';
+    document.getElementById('upload-error').textContent = `⚠️ Analysis failed: ${err.message}`;
     document.getElementById('upload-error').classList.add('show');
   }
 }
