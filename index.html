@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -236,7 +235,7 @@
   
   select.farm-input { 
     appearance: none; 
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2322c55e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 14l-7 7m0 0l-7-7m7 7V3'%3E%3C/path%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2322c55e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 14l-7 7m0 0l-7-7m7 7V3'%3E%3Cpath%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 18px;
@@ -414,6 +413,94 @@
     transition: all 0.2s;
   }
   .reset-btn:hover { background: var(--farm-pale); border-color: #86efac; }
+
+  /* History Panel Layout */
+  .history-section {
+    margin-top: 40px;
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+  }
+  .history-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    list-style: none;
+  }
+  .history-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .history-card:hover {
+    background: var(--farm-pale);
+    border-color: var(--farm-light);
+    transform: translateY(-1px);
+  }
+  .history-left-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .history-crop-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--farm-deep);
+  }
+  .history-sub-details {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .history-right-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+  .history-timestamp {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .history-empty-log {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-muted);
+    font-size: 13.5px;
+    background: var(--white);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+  }
+  .clear-logs-link {
+    background: transparent;
+    border: none;
+    color: var(--red-mid);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .clear-logs-link:hover {
+    text-decoration: underline;
+  }
+  .history-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 12px;
+  }
 </style>
 </head>
 <body>
@@ -422,7 +509,7 @@
   <div class="topbar-logo">Krishi<span>Sense</span></div>
   <div class="topbar-right-controls">
     <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleAppTheme()">
-      🌙 Black Mode
+      🌙 Dark Mode
     </button>
   </div>
 </div>
@@ -503,6 +590,15 @@
     <button class="analyze-btn" id="btnAnalyze" onclick="initiateAnalysis()">
       🔬 Query KrishiSense AI Core
     </button>
+
+    <div class="history-section">
+      <div class="history-header-row">
+        <h2 class="section-label" style="margin-bottom:0;">📜 Recent Scan History</h2>
+        <button class="clear-logs-link" id="btnClearHistory" onclick="clearCachedScans()" style="display:none;">Clear Logs</button>
+      </div>
+      <ul class="history-list" id="historyListContainer">
+        </ul>
+    </div>
   </div>
 
   <div class="screen" id="screen-process">
@@ -611,6 +707,7 @@
   let imageBase64Payload = null; 
   let chartObjectInstance = null;
   let activeForecastPayloadCache = null; 
+  const LOCAL_STORAGE_HISTORY_KEY = 'krishiSenseHistoryLog';
 
   // Core Theme Switching Engine
   function toggleAppTheme() {
@@ -625,15 +722,13 @@
 
   function updateThemeToggleButtonUI(isDark) {
     const btn = document.getElementById('themeToggleBtn');
-    if (isDark) {
-      btn.innerHTML = '☀️';
-    } else {
-      btn.innerHTML = '🌙';
+    if (btn) {
+      btn.innerHTML = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
     }
   }
 
-  // Initializer mapping theme configuration cache
-  (function initThemeCache() {
+  // Initializer mapping cache configuration loops
+  (function initAppCache() {
     const savedTheme = localStorage.getItem('krishiSenseTheme');
     if (savedTheme === 'dark') {
       document.body.classList.add('dark-theme');
@@ -641,6 +736,7 @@
     } else {
       updateThemeToggleButtonUI(false);
     }
+    renderScanHistoryList(); // Render history view on instant load
   })();
 
   function handleImageFile(event) {
@@ -707,6 +803,10 @@
       }
 
       const telemetryData = await upstreamResponse.json();
+      
+      // Save item to client-side localStorage ledger history
+      saveScanRecordToHistory(telemetryData);
+      
       injectTelemetryIntoDashboard(telemetryData);
       setUIVewport('screen-results');
 
@@ -815,6 +915,96 @@
     });
   }
 
+  /* PERSISTENT HISTORY UTILITY METHODS */
+  function saveScanRecordToHistory(payload) {
+    try {
+      const historyRaw = localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY);
+      let historyArr = historyRaw ? JSON.parse(historyRaw) : [];
+
+      // Format dynamic timestamp layout coordinates
+      const currentStamp = new Date().toLocaleDateString('en-IN', {
+        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+      });
+
+      const newHistoryEntry = {
+        id: Date.now(),
+        timestamp: currentStamp,
+        cropName: payload.diagnosis.cropName || 'Unknown Plot',
+        disease: payload.diagnosis.disease || 'Analyzed',
+        status: payload.diagnosis.status || 'warning',
+        payload: payload // Cache entire payload so history clicks run instantly
+      };
+
+      historyArr.unshift(newHistoryEntry);
+      
+      // Limit size ceiling to recent 8 records to preserve storage allocation spaces
+      if (historyArr.length > 8) {
+        historyArr = historyArr.slice(0, 8);
+      }
+
+      localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify(historyArr));
+      renderScanHistoryList();
+    } catch (e) {
+      console.error("History logging failure: ", e);
+    }
+  }
+
+  function renderScanHistoryList() {
+    const listContainer = document.getElementById('historyListContainer');
+    const clearLink = document.getElementById('btnClearHistory');
+    if (!listContainer) return;
+
+    const historyRaw = localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY);
+    const historyArr = historyRaw ? JSON.parse(historyRaw) : [];
+
+    if (historyArr.length === 0) {
+      listContainer.innerHTML = `<li class="history-empty-log">No checked plots in record. Past diagnostics will appear here for easy shortcut access.</li>`;
+      if (clearLink) clearLink.style.display = 'none';
+      return;
+    }
+
+    if (clearLink) clearLink.style.display = 'block';
+
+    listContainer.innerHTML = historyArr.map(item => {
+      let badgeStyle = 'status-warning';
+      if (item.status === 'healthy') badgeStyle = 'status-healthy';
+      if (item.status === 'danger') badgeStyle = 'status-danger';
+
+      return `
+        <li class="history-card" onclick="loadCachedHistoryRecord(${item.id})">
+          <div class="history-left-meta">
+            <div class="history-crop-title">🌾 ${item.cropName}</div>
+            <div class="history-sub-details">${item.disease}</div>
+          </div>
+          <div class="history-right-meta">
+            <span class="history-timestamp">${item.timestamp}</span>
+            <span class="history-badge ${badgeStyle}">${item.status.toUpperCase()}</span>
+          </div>
+        </li>
+      `;
+    }).join('');
+  }
+
+  function loadCachedHistoryRecord(recordId) {
+    const historyRaw = localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY);
+    if (!historyRaw) return;
+    
+    const historyArr = JSON.parse(historyRaw);
+    const selectedItem = historyArr.find(item => item.id === recordId);
+    
+    if (selectedItem && selectedItem.payload) {
+      injectTelemetryIntoDashboard(selectedItem.payload);
+      setUIVewport('screen-results');
+    }
+  }
+
+  function clearCachedScans() {
+    if (confirm("Are you sure you want to completely wipe all recent crop records from this device?")) {
+      localStorage.removeItem(LOCAL_STORAGE_HISTORY_KEY);
+      renderScanHistoryList();
+    }
+  }
+
   function returnToScanScreen() {
     imageBase64Payload = null;
     activeForecastPayloadCache = null;
@@ -822,10 +1012,9 @@
     document.getElementById('imagePreview').src = '';
     document.getElementById('imgInput').value = '';
     document.getElementById('uploadDropZone').style.display = 'block';
+    renderScanHistoryList(); // Sync changes visually
     setUIVewport('screen-upload');
   }
 </script>
 </body>
 </html>
-
-```
