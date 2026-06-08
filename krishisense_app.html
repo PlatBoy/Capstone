@@ -5,718 +5,708 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KrishiSense — Soil-to-Shelf AI</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+  /* Global Modern Farm Aesthetics */
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;700&display=swap');
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --green-deep: #1a3d1f;
-    --green-mid: #2d6a35;
-    --green-light: #4caf50;
-    --green-pale: #e8f5e9;
-    --amber: #f59e0b;
-    --amber-pale: #fef3c7;
-    --soil: #8B5E3C;
-    --soil-pale: #f5ece4;
-    --sky: #0ea5e9;
-    --sky-pale: #e0f2fe;
-    --text: #1a1a1a;
-    --text-muted: #6b7280;
-    --border: rgba(0,0,0,0.1);
-    --card-bg: #fff;
-    --page-bg: #f7faf7;
+    /* Pure White and Deep Farm Greens Palette */
+    --white: #ffffff;
+    --farm-deep: #166534;    /* Main text and anchors */
+    --farm-mid: #15803d;     /* Primary buttons, active states */
+    --farm-light: #22c55e;   /* Positive accents, high confidence */
+    --farm-pale: #f0fdf4;    /* Sage-tinted background blocks */
+    --yellow-mid: #eab308;
+    --red-mid: #dc2626;
+
+    /* Text & UI elements */
+    --text-primary: #111827; /* Near black */
+    --text-muted: #6b7280;   /* Muted grey */
+    --border: #e5e7eb;       /* Subtle dividers */
+    
+    --page-bg: #fdfdfd;      /* Slightly warm off-white */
   }
 
   body {
     font-family: 'DM Sans', sans-serif;
     background: var(--page-bg);
-    color: var(--text);
+    color: var(--text-primary);
     min-height: 100vh;
-    padding-bottom: 40px;
+    overflow-x: hidden;
   }
 
-  /* Header Navigation */
+  /* Deep Green Minimal Topbar */
   .topbar {
-    background: var(--green-deep);
-    padding: 14px 24px;
+    background: var(--farm-deep);
+    padding: 16px 24px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
   }
   .topbar-logo {
     font-family: 'Sora', sans-serif;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
-    color: #fff;
+    color: var(--white);
     letter-spacing: -0.5px;
   }
   .topbar-logo span { color: #86efac; }
   .topbar-sub {
-    font-size: 12px;
-    color: rgba(255,255,255,0.5);
-    margin-left: auto;
-  }
-
-  /* Hero Section */
-  .hero {
-    background: linear-gradient(135deg, #1a3d1f 0%, #2d6a35 60%, #3d8b45 100%);
-    padding: 36px 24px 32px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  }
-  .hero h1 {
-    font-family: 'Sora', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 8px;
-    position: relative;
-  }
-  .hero p {
-    font-size: 14px;
+    font-size: 13px;
     color: rgba(255,255,255,0.7);
-    max-width: 480px;
-    margin: 0 auto 24px;
-    position: relative;
+    font-weight: 400;
   }
 
-  /* Execution Flow Navigation Pills */
+  /* Flat, Spacious Steps Row */
   .steps-row {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
     display: flex;
     justify-content: center;
-    gap: 6px;
-    position: relative;
+    gap: 12px;
   }
   .step-pill {
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 12px;
-    color: rgba(255,255,255,0.9);
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
   }
   .step-pill.active {
-    background: rgba(255,255,255,0.3);
-    border-color: rgba(255,255,255,0.6);
-    color: #fff;
-    font-weight: 500;
-  }
-  .step-num {
-    background: rgba(255,255,255,0.3);
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
+    background: var(--farm-pale);
+    color: var(--farm-deep);
+    border-color: #86efac;
     font-weight: 700;
   }
-
-  /* Main Container Layout */
-  .main {
-    padding: 24px 16px;
-    max-width: 640px;
-    margin: 0 auto;
-  }
-
-  .screen { display: none; }
-  .screen.active { display: block; }
-
-  .section-label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+  .step-num {
+    width: 22px; height: 22px;
+    background: #f3f4f6;
     color: var(--text-muted);
-    margin-bottom: 12px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .step-pill.active .step-num {
+    background: var(--farm-deep);
+    color: var(--white);
   }
 
-  /* Upload Mechanics Layout */
+  /* Centered, Minimalistic Layout */
+  .main {
+    max-width: 680px;
+    margin: 40px auto;
+    padding: 0 16px;
+  }
+
+  .screen { display: none; opacity: 0; transition: opacity 0.3s ease; }
+  .screen.active { display: block; opacity: 1; }
+
+  /* Minimal Input Elements */
+  .section-label {
+    font-family: 'Sora', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--farm-deep);
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .field-box { margin-bottom: 24px; }
+  .field-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--farm-deep);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Minimal Upload Container */
   .upload-zone {
     border: 2px dashed #a7d7ab;
     border-radius: 16px;
-    background: var(--green-pale);
-    padding: 44px 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-bottom: 16px;
-  }
-  .upload-zone:hover {
-    border-color: var(--green-light);
-    background: #d4edda;
-  }
-  .upload-icon { font-size: 44px; margin-bottom: 12px; }
-  .upload-title { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 600; color: var(--green-deep); margin-bottom: 4px; }
-  .upload-sub { font-size: 13px; color: var(--text-muted); }
-
-  .preview-img {
-    width: 100%;
-    max-height: 240px;
-    object-fit: cover;
-    border-radius: 14px;
-    display: none;
-    margin-bottom: 16px;
-    border: 1px solid var(--border);
-  }
-
-  /* Parameters Meta Grid Form */
-  .info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .info-card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px;
-  }
-  .info-card label {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-  }
-  .info-card select, .info-card input {
-    width: 100%;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-size: 14px;
-    font-family: 'DM Sans', sans-serif;
-    background: #fafafa;
-    color: var(--text);
-    outline: none;
-  }
-  .info-card select:focus, .info-card input:focus {
-    border-color: var(--green-light);
-    background: #fff;
-  }
-
-  .analyze-btn {
-    width: 100%;
-    padding: 16px;
-    background: var(--green-mid);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    font-family: 'Sora', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-  .analyze-btn:hover { background: var(--green-deep); transform: translateY(-1px); }
-
-  /* Processing Core Spinner Styles */
-  .loading-box {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 16px;
+    background: var(--farm-pale);
     padding: 48px 24px;
     text-align: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-bottom: 24px;
   }
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid #e0e0e0;
-    border-top-color: var(--green-mid);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 20px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-family: 'Sora', sans-serif; font-size: 15px; color: var(--green-deep); font-weight: 600; margin-bottom: 4px; }
-  .loading-sub { font-size: 13px; color: var(--text-muted); }
+  .upload-zone:hover { background: #dcfce7; border-color: var(--farm-light); }
+  .upload-zone h3 { font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 600; color: var(--farm-deep); margin-top: 16px; }
+  .upload-zone p { font-size: 14px; color: var(--text-muted); margin-top: 6px; }
 
-  /* Analytics Display Cards Architecture */
-  .result-card {
-    background: #fff;
-    border: 1px solid var(--border);
+  .preview-img-container {
+    display: none;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .preview-img {
+    width: 100%; max-height: 280px;
+    object-fit: cover;
     border-radius: 16px;
-    overflow: hidden;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    border: 1px solid var(--border);
   }
-  .result-header {
-    padding: 16px 20px 12px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  .change-img-btn {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(255,255,255,0.9);
+    border: none; border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px; font-weight: 600; color: var(--farm-deep);
+    cursor: pointer;
   }
-  .result-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-  }
-  .result-title { font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 600; }
-  .result-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
-  .result-body { padding: 18px 20px; }
 
-  .diagnosis-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 12px;
-  }
-  .badge-healthy { background: #dcfce7; color: #166534; }
-  .badge-warning { background: var(--amber-pale); color: #92400e; }
-
-  /* Operational Yield Grid Metrics */
-  .stat-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  .stat-box {
-    background: var(--page-bg);
+  /* Whiterounded inputs on white background */
+  .farm-input {
+    width: 100%;
+    background: var(--white);
+    border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 14px 10px;
-    text-align: center;
-    border: 1px solid rgba(0,0,0,0.02);
+    padding: 14px 16px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary);
+    outline: none;
+    transition: all 0.2s ease;
   }
-  .stat-val { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 700; color: var(--green-deep); }
-  .stat-lbl { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.2; }
+  .farm-input:focus { border-color: var(--farm-light); box-shadow: 0 0 0 3px #dcfce7; }
+  select.farm-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23166534'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px; }
 
-  /* Market Analysis Grid Matrix */
-  .market-grid {
+  /* Grid layout for parameters */
+  .params-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 16px;
+    gap: 16px;
+    margin-bottom: 32px;
   }
-  .market-box {
-    background: var(--page-bg);
-    border-radius: 12px;
-    padding: 14px;
-    border: 1px solid rgba(0,0,0,0.02);
-  }
-  .market-name { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-  .market-price { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: var(--green-deep); }
-  .market-trend { font-size: 12px; margin-top: 4px; font-weight: 500; }
-  .trend-up { color: #16a34a; }
-  .trend-down { color: #dc2626; }
 
-  /* Recommendations Step Arrays */
-  .tip-list { list-style: none; }
-  .tip-list li {
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13.5px;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    line-height: 1.5;
-  }
-  .tip-list li:last-child { border-bottom: none; }
-  .tip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); flex-shrink: 0; margin-top: 7px; }
-
-  .prose { font-size: 13.5px; line-height: 1.6; color: #333; }
-
-  /* Microclimatic Conditions Data Ribbon */
-  .weather-strip {
-    background: var(--sky-pale);
-    border: 1px solid #bae6fd;
-    border-radius: 14px;
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 16px;
-    font-size: 13.5px;
-  }
-  .weather-icon { font-size: 26px; }
-  .weather-info { flex: 1; }
-  .weather-temp { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #0369a1; }
-  .weather-desc { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
-
-  .new-scan-btn {
+  /* Full Width Forest Green Button */
+  .analyze-btn {
     width: 100%;
-    padding: 14px;
-    background: #fff;
-    color: var(--green-mid);
-    border: 2px solid var(--green-mid);
-    border-radius: 12px;
+    padding: 18px;
+    background: var(--farm-mid);
+    color: var(--white);
+    border: none;
+    border-radius: 14px;
     font-family: 'Sora', sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .analyze-btn:hover { background: var(--farm-deep); }
+  .analyze-btn:active { transform: translateY(1px); }
+
+  /* Processing Core Spinner */
+  .processing-container {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 64px 32px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+  .spinner {
+    width: 50px; height: 50px;
+    border: 4px solid #e5e7eb;
+    border-top-color: var(--farm-mid);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 24px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .processing-container h2 { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 600; color: var(--farm-deep); margin-bottom: 8px; }
+  .processing-container p { font-size: 14px; color: var(--text-muted); }
+
+  /* Dashboard - White cards with green accents */
+  .dashboard-card {
+    background: var(--white);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .card-icon { font-size: 24px; }
+  .card-titles { flex: 1; }
+  .card-main-title { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 600; color: var(--farm-deep); }
+  .card-sub-title { font-size: 13px; color: var(--text-muted); margin-top: 1px; }
+
+  .card-body { padding: 24px; }
+
+  /* Minimal Status Badges */
+  .diag-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .status-healthy { background: #dcfce7; color: #166534; }
+  .status-warning { background: var(--amber-pale); color: #92400e; }
+  .status-danger { background: #fee2e2; color: #991b1b; }
+
+  /* Confidence flat bar */
+  .conf-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-size: 13px; color: var(--text-muted); }
+  .conf-bar-container { flex: 1; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+  .conf-bar-fill { height: 100%; background: var(--farm-light); border-radius: 4px; width: 0%; transition: width 1s ease; }
+
+  .prose { font-size: 14px; line-height: 1.6; color: #333; }
+  .prose strong { color: var(--farm-deep); font-weight: 700; }
+
+  /* Yield Grid - Minimalist */
+  .yield-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .yield-box {
+    background: var(--farm-pale);
+    border-radius: 14px;
+    padding: 20px 16px;
+    text-align: center;
+    border: 1px solid #dcfce7;
+  }
+  .yield-val { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; color: var(--farm-deep); }
+  .yield-label { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-top: 6px; line-height: 1.3; }
+
+  /* Market pricing - minimalist chart & list */
+  .chart-wrap { margin-bottom: 20px; }
+  .price-chart-wrap { background: #fff; border-radius: 14px; padding: 12px; }
+
+  .market-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .market-item {
+    background: var(--farm-pale);
+    padding: 16px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    border: 1px solid rgba(0,0,0,0.02);
+  }
+  .market-name-row { font-size: 13px; color: var(--text-muted); font-weight: 500; margin-bottom: 2px;}
+  .market-price { font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: var(--farm-deep); }
+  .trend-box { font-size: 11px; font-weight: 700; border-radius: 4px; padding: 2px 6px; }
+  .trend-up { color: var(--farm-deep); background: #dcfce7; }
+  .trend-down { color: #991b1b; background: #fee2e2; }
+
+  /* Weather Ribbon */
+  .weather-ribbon {
+    background: #e0f2fe;
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 24px;
+    border: 1px solid #bae6fd;
+  }
+  .w-temp { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; color: #0369a1; }
+  .w-details { flex: 1; font-size: 14px; color: #075985; line-height: 1.4; }
+
+  /* Recommendation Checklist */
+  .tips-list { list-style: none; }
+  .tips-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.5;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .tips-list li:last-child { border-bottom: none; }
+  .check-icon { color: var(--farm-light); font-weight: bold; margin-top: 2px; }
+
+  .reset-btn {
+    width: 100%;
     margin-top: 12px;
+    padding: 14px;
+    background: var(--white);
+    color: var(--farm-deep);
+    border: 2px solid var(--farm-pale);
+    border-radius: 14px;
+    font-family: 'Sora', sans-serif;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
     transition: all 0.2s;
   }
-  .new-scan-btn:hover { background: var(--green-pale); }
-  
-  .price-chart-wrap {
-    background: var(--page-bg);
-    border-radius: 12px;
-    padding: 12px;
-    margin-top: 12px;
-  }
+  .reset-btn:hover { background: var(--farm-pale); border-color: #86efac; }
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="topbar-logo">Krishi<span>Sense</span></div>
-  <div class="topbar-sub">🇮🇳 Soil-to-Shelf Smart Engine</div>
+  <div class="topbar-sub">Soil-to-Shelf AI Engine</div>
 </div>
 
-<div class="hero">
-  <h1>🌾 Precision Agrotech AI</h1>
-  <p>Upload a photo of your leaves, crop, or soil patch to calculate instant insights, yield trends, and 30-day marketplace pricing indexes.</p>
-  <div class="steps-row">
-    <div class="step-pill active" id="pill-1"><div class="step-num">1</div> Upload</div>
-    <div class="step-pill" id="pill-2"><div class="step-num">2</div> Analyzing</div>
-    <div class="step-pill" id="pill-3"><div class="step-num">3</div> Shelf Ledger</div>
+<!-- Step Progress -->
+<div class="steps-row">
+  <div class="step-pill active" id="stepPill-upload">
+    <div class="step-num">1</div>
+    Upload
+  </div>
+  <div class="step-pill" id="stepPill-process">
+    <div class="step-num">2</div>
+    Analyze
+  </div>
+  <div class="step-pill" id="stepPill-results">
+    <div class="step-num">3</div>
+    Dashboard
   </div>
 </div>
 
 <div class="main">
 
+  <!-- SCREEN 1: UPLOAD & PARAMETERS -->
   <div class="screen active" id="screen-upload">
-    <p class="section-label">Step 1 — Imagery & Crop Metadata</p>
     
-    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-      <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="processImageUpload(event)">
-      <div class="upload-icon">📸</div>
-      <div class="upload-title">Select crop or field image</div>
-      <div class="upload-sub">Supports leaf closeups, soil frames, or aggregate drone shots</div>
-    </div>
-    
-    <img id="imagePreview" class="preview-img" />
+    <div class="field-box">
+      <h2 class="section-label">📷 Crop Imagery Matrix</h2>
+      
+      <!-- Upload Zone -->
+      <div class="upload-zone" id="uploadDropZone" onclick="document.getElementById('imgInput').click()">
+        <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImageFile(event)">
+        <div style="font-size:40px;">🌿</div>
+        <h3>Select Field Photograph</h3>
+        <p>Close-up of leaves, soil texture, or field panorama</p>
+      </div>
 
-    <div class="info-grid">
-      <div class="info-card">
-        <label>Target Crop Specie</label>
-        <select id="cropType">
+      <!-- Preview -->
+      <div class="preview-img-container" id="previewContainer">
+        <img id="imagePreview" src="#" class="preview-img" alt="Crop Preview" />
+        <button class="change-img-btn" onclick="document.getElementById('imgInput').click()">Change</button>
+      </div>
+    </div>
+
+    <!-- Params Grid -->
+    <h2 class="section-label">🌱 Agronomic Parameters</h2>
+    <div class="params-grid">
+      <div class="field-box">
+        <label class="field-label" for="cropSelect">Cultivated Crop</label>
+        <select class="farm-input" id="cropSelect">
           <option value="Wheat">Wheat (गेहूं)</option>
           <option value="Rice">Rice (धान)</option>
           <option value="Cotton">Cotton (कपास)</option>
           <option value="Sugarcane">Sugarcane (गन्ना)</option>
           <option value="Tomato">Tomato (टमाटर)</option>
+          <option value="Mustard">Mustard (सरसों)</option>
         </select>
       </div>
-      <div class="info-card">
-        <label>Geographic Region</label>
-        <select id="region">
-          <option value="Punjab">Punjab (IN-PB)</option>
-          <option value="Haryana">Haryana (IN-HR)</option>
-          <option value="Uttar Pradesh">Uttar Pradesh (IN-UP)</option>
-          <option value="Maharashtra">Maharashtra (IN-MH)</option>
+      <div class="field-box">
+        <label class="field-label" for="regionSelect">Farmer Region</label>
+        <select class="farm-input" id="regionSelect">
+          <option value="Punjab">Punjab</option>
+          <option value="Haryana">Haryana</option>
+          <option value="Uttar Pradesh">Uttar Pradesh</option>
+          <option value="Maharashtra">Maharashtra</option>
+          <option value="Madhya Pradesh">Madhya Pradesh</option>
         </select>
       </div>
-      <div class="info-card">
-        <label>Total Land Plot (Acres)</label>
-        <input type="number" id="farmSize" value="4" min="0.5" max="100" step="0.5">
+      <div class="field-box">
+        <label class="field-label" for="farmSizeInput">Plot Area (Acres)</label>
+        <input class="farm-input" type="number" id="farmSizeInput" value="4" min="0.5" max="50" step="0.5">
       </div>
-      <div class="info-card">
-        <label>Observed Soil Matrix</label>
-        <select id="soilType">
+      <div class="field-box">
+        <label class="field-label" for="soilSelect">Soil Type</label>
+        <select class="farm-input" id="soilSelect">
           <option value="Alluvial">Alluvial (जलोढ़)</option>
           <option value="Black Cotton">Black Soil (काली मिट्टी)</option>
           <option value="Sandy Loam">Sandy Loam (बलुई दोमट)</option>
+          <option value="Red Laterite">Red Soil (लाल मिट्टी)</option>
         </select>
       </div>
     </div>
 
-    <button class="analyze-btn" onclick="executeIntelligencePipeline()">
-      🔬 Query KrishiSense Core
+    <button class="analyze-btn" id="btnAnalyze" onclick="initiateAnalysis()">
+      🔬 Query KrishiSense AI Core
     </button>
   </div>
 
-  <div class="screen" id="screen-loading">
-    <div class="loading-box">
+  <!-- SCREEN 2: PROCESSING (SPINNER) -->
+  <div class="screen" id="screen-process">
+    <div class="processing-container">
       <div class="spinner"></div>
-      <div class="loading-text" id="loaderText">Initializing Neural Matrix...</div>
-      <div class="loading-sub" id="loaderSub">Decrypting structural spatial imagery arrays.</div>
+      <h2 id="processTitle">Initializing Network Handshake...</h2>
+      <p id="processSub">Decrypting geometric pixel arrays of the photograph.</p>
     </div>
   </div>
 
+  <!-- SCREEN 3: RESULTS DASHBOARD -->
   <div class="screen" id="screen-results">
     
-    <div class="weather-strip">
-      <div class="weather-icon">🌤️</div>
-      <div class="weather-info">
-        <div class="weather-temp" id="resWeatherTemp">31.4°C</div>
-        <div class="weather-desc" id="resWeatherDesc">Atmospheric clear sky conditions. Optimal window for foliar nutrient sprays.</div>
-      </div>
-      <div style="font-size: 12px; color: #0369a1; font-weight: 600;" id="resWeatherHumid">62% RH</div>
+    <!-- Weather Ribbon -->
+    <div class="weather-ribbon">
+      <div style="font-size:30px;">🌤️</div>
+      <div class="w-temp" id="w_temp">32°C</div>
+      <div class="w-details" id="w_desc">Optimal daylight luminosity detected. Excellent window for fertilizer application.</div>
+      <div style="font-size: 12px; color: #0369a1; font-weight: 700;" id="w_humidity">RH: 64%</div>
     </div>
 
-    <div class="result-card">
-      <div class="result-header">
-        <div class="result-icon" style="background: #dcfce7;">🔬</div>
-        <div>
-          <div class="result-title">Computer Vision Diagnosis</div>
-          <div class="result-sub" id="resCropHeader">Wheat · Punjab Domain</div>
+    <!-- Cards Layout -->
+    
+    <!-- Card 1: Diagnosis -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <div class="card-icon" style="background: #dcfce7; color: #166534; padding: 10px; border-radius: 12px;">🔬</div>
+        <div class="card-titles">
+          <div class="card-main-title">Pathology & Leaf Vision</div>
+          <div class="card-sub-title" id="diagCropRegionHeader">Crop Diagnosis</div>
         </div>
       </div>
-      <div class="result-body">
-        <div class="diagnosis-badge badge-warning" id="resDiagStatus">Early Stage Rust Spotted</div>
-        <p class="prose" id="resDiagDesc">Spectral signatures reveal low-density rust spotting along middle blade structures. Immediate treatment limits aggregate biological yield degradation vectors.</p>
-      </div>
-    </div>
-
-    <div class="result-card">
-      <div class="result-header">
-        <div class="result-icon" style="background: #fef3c7;">📊</div>
-        <div>
-          <div class="result-title">Agronomic Yield Matrix</div>
-          <div class="result-sub">Aggregated predictive harvest calculations based on regional field coefficients</div>
+      <div class="card-body">
+        <div class="diag-badge status-healthy" id="diagStatusBadge">Healthy Leaf Matrix</div>
+        <div class="conf-row">
+          <span>Vision Confidence</span>
+          <div class="conf-bar-container"><div class="conf-bar-fill" id="confBar" style="width: 0%"></div></div>
+          <span id="confVal">0%</span>
         </div>
-      </div>
-      <div class="result-body">
-        <div class="stat-row">
-          <div class="stat-box">
-            <div class="stat-val" id="resYieldPerAcre">19.2</div>
-            <div class="stat-lbl">Yield Index<br>(Quintal/Acre)</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-val" id="resYieldTotal">76.8</div>
-            <div class="stat-lbl">Total Volume<br>(Quintals)</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-val" id="resYieldRevenue">₹1.88L</div>
-            <div class="stat-lbl">Projected Valuation<br>(Gross MSP Base)</div>
-          </div>
-        </div>
-        <p class="prose" id="resYieldDesc">Estimated metric production sits around local targets. Maintaining structural systemic tracking guards against structural downstream moisture anomalies.</p>
+        <p class="prose" id="diagDesc">AI nodes confirm optimal chlorophyll concentration levels. Tissue geometry adheres to baseline structural metrics.</p>
       </div>
     </div>
 
-    <div class="result-card">
-      <div class="result-header">
-        <div class="result-icon" style="background: #e0f2fe;">💰</div>
-        <div>
-          <div class="result-title">30-Day Agmarketplace Trend Index</div>
-          <div class="result-sub">Predictive pricing structures over local regional mandis</div>
+    <!-- Card 2: Yield Matrix -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <div class="card-icon" style="background: #fef3c7; color: #92400e; padding: 10px; border-radius: 12px;">📊</div>
+        <div class="card-titles">
+          <div class="card-main-title">Agronomic Yield Matrix</div>
+          <div class="card-sub-title">Estimated harvest volume using predictive season coefficients</div>
         </div>
       </div>
-      <div class="result-body">
-        <p class="prose" id="resMarketDesc">Predictive indicators pinpoint a volume drop during Day 20, pushing spot market valuations upwards by 6-8%. Recommendation flags selling windows inside late monthly intervals.</p>
-        
+      <div class="card-body">
+        <div class="yield-grid">
+          <div class="yield-box">
+            <div class="yield-val" id="y_perAcre">19.5</div>
+            <div class="yield-label">Yield Index<br>(Quintal/Acre)</div>
+          </div>
+          <div class="yield-box">
+            <div class="yield-val" id="y_total">78</div>
+            <div class="yield-label">Total Volume<br>(Quintals)</div>
+          </div>
+          <div class="yield-box">
+            <div class="yield-val" id="y_rev">1.9L</div>
+            <div class="yield-label">Projected Valuation<br>(Gross MSP)</div>
+          </div>
+        </div>
+        <p class="prose" id="y_desc">Field telemetry correlates well with regional averages. Soil nutrient retention is solid.</p>
+      </div>
+    </div>
+
+    <!-- Card 3: Market Intelligence -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <div class="card-icon" style="background: #e0f2fe; color: #0369a1; padding: 10px; border-radius: 12px;">💰</div>
+        <div class="card-titles">
+          <div class="card-main-title">Market Price & Selling Index</div>
+          <div class="card-sub-title" id="mktCropHeader">30-Day Agmarketplace Forecast</div>
+        </div>
+      </div>
+      <div class="card-body">
         <div class="price-chart-wrap">
-          <canvas id="priceForecastChart" height="150"></canvas>
+          <canvas id="mktChart" height="150"></canvas>
         </div>
-
-        <div class="market-grid" id="marketGridContainer">
-          </div>
+        <p class="prose" style="margin-bottom: 20px;" id="mktDesc">Selling Option: Volume spikes are expected on Day 21, driving short-term volatility. Hold until Day 28 for peak returns.</p>
+        <div class="market-list" id="mktListContainer">
+          <!-- Markets injected here -->
+        </div>
       </div>
     </div>
 
-    <div class="result-card">
-      <div class="result-header">
-        <div class="result-icon" style="background: #f3e8ff;">🌱</div>
-        <div>
-          <div class="result-title">Field Interventions Ledger</div>
-          <div class="result-sub">Prioritized technical workflows for direct field optimization</div>
+    <!-- Card 4: Action Ledger -->
+    <div class="dashboard-card">
+      <div class="card-header">
+        <div class="card-icon" style="background: #f3e8ff; color: #6b21a8; padding: 10px; border-radius: 12px;">🌿</div>
+        <div class="card-titles">
+          <div class="card-main-title">Field Intervention Ledger</div>
+          <div class="card-sub-title">Prioritized agronomic workflow tasks for yield optimization</div>
         </div>
       </div>
-      <div class="result-body">
-        <ul class="tip-list" id="recommendationsContainer">
-          </ul>
+      <div class="card-body">
+        <ul class="tips-list" id="recContainer">
+          <!-- Recommendations injected here -->
+        </ul>
       </div>
     </div>
 
-    <button class="new-scan-btn" onclick="resetApplicationPipeline()">↩️ Initialize Secondary Scan</button>
+    <button class="reset-btn" onclick="returnToScanScreen()">↩️ Initialize Secondary Plot Scan</button>
   </div>
 
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-
 <script>
-  let chartReferenceInstance = null;
+  // State management
+  let imageBase64Payload = null; // The image token ready for backend transmission
+  let chartObjectInstance = null;
 
-  function processImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+  function handleImageFile(event) {
+    const imgFile = event.target.files[0];
+    if (!imgFile) return;
 
     const fileReader = new FileReader();
-    fileReader.onload = function(e) {
-      const previewElement = document.getElementById('imagePreview');
-      previewElement.src = e.target.result;
-      previewElement.style.display = 'block';
+    fileReader.onload = (e) => {
+      // Store raw Base64 data for the final API payload
+      imageBase64Payload = e.target.result.split(',')[1];
+      
+      // Update minimalistic aesthetic preview frame
+      document.getElementById('imagePreview').src = e.target.result;
+      document.getElementById('previewContainer').style.display = 'block';
+      document.getElementById('uploadDropZone').style.display = 'none';
     }
-    fileReader.readAsDataURL(file);
+    fileReader.readAsDataURL(imgFile);
   }
 
-  function toggleScreenViewport(screenId) {
-    document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
+  function setUIVewport(viewportId) {
+    // Clean screen transitions
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(viewportId).classList.add('active');
 
-    // Sync progress indicators
-    const stepMapping = { 'screen-upload': 1, 'screen-loading': 2, 'screen-results': 3 };
-    const currentStep = stepMapping[screenId];
+    // Minimalistic progress syncing
+    const viewportSteps = { 'screen-upload': 'upload', 'screen-process': 'process', 'screen-results': 'results' };
+    const stepName = viewportSteps[viewportId];
     
-    for(let i=1; i<=3; i++) {
-      const pill = document.getElementById(`pill-${i}`);
-      if(i <= currentStep) pill.classList.add('active');
-      else pill.classList.remove('active');
+    document.querySelectorAll('.step-pill').forEach(s => s.classList.remove('active'));
+    document.getElementById(`stepPill-${stepName}`).classList.add('active');
+  }
+
+  function updateProcessText(title, sub) {
+    document.getElementById('processTitle').textContent = title;
+    document.getElementById('processSub').textContent = sub;
+  }
+
+  async function initiateAnalysis() {
+    // 1. Inputs validation & capture
+    const crop = document.getElementById('cropSelect').value;
+    const region = document.getElementById('regionSelect').value;
+    const farmSize = parseFloat(document.getElementById('farmSizeInput').value) || 4;
+    const soilType = document.getElementById('soilSelect').value;
+
+    if (!imageBase64Payload) {
+      alert("⚠️ Farm image asset is required. Please capture or upload.");
+      return;
+    }
+
+    // 2. Lock UI & show modern farm loader
+    setUIVewport('screen-process');
+    updateProcessText("Connecting to AgAI Neuro-Core...", "Establishing handshakes with vision network nodes.");
+
+    try {
+      // 3. Connect to the Live Backend Endpoint
+      // Note: This endpoint must point to your vercel.json mapping for /api/analyze.js
+      const upstreamResponse = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          crop: crop,
+          region: region,
+          farmSize: farmSize,
+          soilType: soilType,
+          imageBase64: imageBase64Payload
+        })
+      });
+
+      if (!upstreamResponse.ok) {
+        const errDetails = await upstreamResponse.json();
+        throw new Error(errDetails.error || "Establish AgAI connection failed.");
+      }
+
+      const telemetryData = await upstreamResponse.json();
+
+      // 4. Inject real-world AI data into minimalist cards
+      injectTelemetryIntoDashboard(telemetryData);
+
+      // 5. Present the Agronomic Shelf Ledger
+      setUIVewport('screen-results');
+
+    } catch (HandshakeError) {
+      console.error(HandshakeError);
+      alert(`⚠️ Agronomic Handshake Crash: ${HandshakeError.message}`);
+      setUIVewport('screen-upload');
     }
   }
 
-  function updateProcessingPillText(mainText, subText) {
-    document.getElementById('loaderText').textContent = mainText;
-    document.getElementById('loaderSub').textContent = subText;
-  }
+  function injectTelemetryIntoDashboard(payload) {
+    // WEATHER Ribbon
+    document.getElementById('w_temp').textContent = payload.weather.temp || '--°C';
+    document.getElementById('w_desc').textContent = payload.weather.desc || '--';
+    document.getElementById('w_humidity').textContent = `RH: ${payload.weather.humidity || '--'}`;
 
-  async function executeIntelligencePipeline() {
-    // Collect variables
-    const crop = document.getElementById('cropType').value;
-    const region = document.getElementById('region').value;
-    const size = parseFloat(document.getElementById('farmSize').value) || 1;
-    const soil = document.getElementById('soilType').value;
-
-    toggleScreenViewport('screen-loading');
-
-    // Step 1: Computer Vision Extraction
-    updateProcessingPillText("Running Computer Vision Models...", "Extracting chlorophyll and tissue pathology arrays.");
-    await new Promise(resolve => setTimeout(resolve, 1200));
-
-    // Step 2: Meteorological Correlation
-    updateProcessingPillText("Connecting Agroclimatic Feeds...", "Re-indexing moisture, heat indexes, and seasonal models.");
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Step 3: Financial Market Intelligence Engine
-    updateProcessingPillText("Processing Mandatory Market Futures...", "Parsing historical trends across APMC nodes.");
-    await new Promise(resolve => setTimeout(resolve, 900));
-
-    // Generate dynamic mock telemetry payload reflecting choices
-    const contextEngineData = compileAgronomicTelemetry(crop, region, size, soil);
+    // VISION DIAGNOSIS Card
+    document.getElementById('diagCropRegionHeader').textContent = `${payload.diagnosis.cropName || 'Plot'} · ${payload.diagnosis.region || 'Region'}`;
+    const badge = document.getElementById('diagStatusBadge');
+    badge.textContent = payload.diagnosis.disease || 'Analyzed';
     
-    // Inject and parse inside result viewport layers
-    renderAgronomicIntelligence(contextEngineData);
-    toggleScreenViewport('screen-results');
-  }
+    // Normalize string constraints (healthy, warning, danger)
+    let diagStyle = 'status-warning';
+    if (payload.diagnosis.status === 'healthy') diagStyle = 'status-healthy';
+    if (payload.diagnosis.status === 'danger') diagStyle = 'status-danger';
+    badge.className = `diag-badge ${diagStyle}`;
 
-  function compileAgronomicTelemetry(crop, region, size, soil) {
-    // Baseline pricing factors mapping
-    const structuralBaseRates = { Wheat: 2425, Rice: 2300, Cotton: 7120, Sugarcane: 340, Tomato: 1800 };
-    const stepRate = structuralBaseRates[crop] || 2000;
+    document.getElementById('confVal').textContent = `${payload.diagnosis.confidence || '0'}%`;
+    document.getElementById('confBar').style.width = `${payload.diagnosis.confidence || '0'}%`;
+    document.getElementById('diagDesc').textContent = payload.diagnosis.description || '--';
 
-    return {
-      weather: {
-        temp: region === "Punjab" || region === "Haryana" ? "34.1°C" : "31.8°C",
-        humidity: "58% Relative Humidity",
-        desc: "Favorable dry air velocity. Excellent timeline for applying micronutrient profiles."
-      },
-      diagnosis: {
-        cropName: `${crop} · ${region} Hub`,
-        status: Math.random() > 0.45 ? "Healthy Crop Matrix" : `Early ${crop} Leaf Blight Anomaly`,
-        badgeClass: Math.random() > 0.45 ? "badge-healthy" : "badge-warning",
-        desc: `Structural classification nodes confirm optimal vegetation indexes across ${soil} configurations. Minor mineral variations require observation.`
-      },
-      yield: {
-        perAcre: (Math.random() * 5 + 16).toFixed(1),
-        calculateTotal: function() { return (this.perAcre * size).toFixed(1); },
-        calculateRev: function() { return ((this.calculateTotal() * stepRate) / 100000).toFixed(2); }
-      },
-      market: {
-        desc: `Aggregated futures indicate an upward trend inside ${region} delivery networks owing to minor supply crunches. Selling on late schedules yields better gains.`,
-        prices: [stepRate, Math.round(stepRate*1.02), Math.round(stepRate*0.99), Math.round(stepRate*1.05), Math.round(stepRate*1.09)],
-        hubs: [
-          { name: "Primary Regional Mandi", price: stepRate, trend: "up", trendText: "↑ High Inflow" },
-          { name: "State APMC Central Node", price: Math.round(stepRate * 1.04), trend: "up", trendText: "↑ Rising" },
-          { name: "National Digital Spot Index", price: Math.round(stepRate * 1.07), trend: "stable", trendText: "→ Stable" },
-          { name: "Corporate Forward Option", price: Math.round(stepRate * 0.96), trend: "down", trendText: "↓ Restricted" }
-        ]
-      },
-      recommendations: [
-        `Optimize nitrogen application inside ${soil} layer matrices to secure structural cell walls.`,
-        `Monitor localized water tables during subsequent generational growth steps.`,
-        "Divert high-grade output toward State APMC hubs to maximize profit structures over basic baseline MSP.",
-        "Reference PM-KISAN database parameters to unlock modern structural irrigation subsidies."
-      ]
-    };
-  }
+    // YIELD Card (Maps API JSON structures efficiently)
+    document.getElementById('y_perAcre').textContent = payload.yield.per_acre || payload.yield.perAcre || '0';
+    document.getElementById('y_total').textContent = payload.yield.total || '0';
+    document.getElementById('y_rev').textContent = `₹${payload.yield.revenue_lakh || payload.yield.revenueLakh || '0'}L`;
+    document.getElementById('y_desc').textContent = payload.yield.description || payload.yield.desc || '';
 
-  function renderAgronomicIntelligence(payload) {
-    document.getElementById('resWeatherTemp').textContent = payload.weather.temp;
-    document.getElementById('resWeatherHumid').textContent = payload.weather.humidity;
-    document.getElementById('resWeatherDesc').textContent = payload.weather.desc;
+    // MARKET INTERVENTIONS Card
+    document.getElementById('mktCropHeader').textContent = `${payload.diagnosis.cropName || 'Crop'} Mandi Forecast`;
+    document.getElementById('mktDesc').textContent = payload.price_forecast.description || payload.price_forecast.desc || '--';
 
-    document.getElementById('resCropHeader').textContent = payload.diagnosis.cropName;
-    const badge = document.getElementById('resDiagStatus');
-    badge.textContent = payload.diagnosis.status;
-    badge.className = `diagnosis-badge ${payload.diagnosis.badgeClass}`;
-    document.getElementById('resDiagDesc').textContent = payload.diagnosis.desc;
-
-    document.getElementById('resYieldPerAcre').textContent = payload.yield.perAcre;
-    document.getElementById('resYieldTotal').textContent = payload.yield.calculateTotal();
-    document.getElementById('resYieldRevenue').textContent = `₹${payload.yield.calculateRev()}L`;
-
-    document.getElementById('resMarketDesc').textContent = payload.market.desc;
-
-    // Build market block items
-    const marketGrid = document.getElementById('marketGridContainer');
-    marketGrid.innerHTML = payload.market.hubs.map(m => `
-      <div class="market-box">
-        <div class="market-name">${m.name}</div>
-        <div class="market-price">₹${m.price}</div>
-        <div class="market-trend ${m.trend === 'up' ? 'trend-up' : m.trend === 'down' ? 'trend-down' : ''}">
-          ${m.trendText}
+    const mktGrid = document.getElementById('mktListContainer');
+    mktGrid.innerHTML = (payload.price_forecast.markets || []).map(m => `
+      <div class="market-item">
+        <div>
+          <div class="market-name-row">${m.name || 'Mandi'}</div>
+          <div class="market-price">₹${m.price || '0'}</div>
         </div>
+        <div class="trend-box ${m.trend === 'up' ? 'trend-up' : 'trend-down'}">${m.trend === 'up' ? '↑ Rising' : '↓ Falling'}</div>
       </div>
     `).join('');
 
-    // Inject Interventions
-    const tipsContainer = document.getElementById('recommendationsContainer');
-    tipsContainer.innerHTML = payload.recommendations.map(text => `
-      <li><div class="tip-dot"></div><span>${text}</span></li>
-    `).join('');
+    // Load dynamic minimalist financial graph component
+    loadFarmChart(payload.price_forecast);
 
-    // Generate Chart JS Component Graph
-    renderForecastChartGraph(payload.market.prices);
+    // RECOMMENDATIONS LEDGER Container
+    const recCon = document.getElementById('recContainer');
+    recCon.innerHTML = (payload.recommendations || []).map(tip => `
+      <li><span class="check-icon">✓</span><span>${tip}</span></li>
+    `).join('');
   }
 
-  function renderForecastChartGraph(dataPoints) {
-    if (chartReferenceInstance) {
-      chartReferenceInstance.destroy();
+  function loadFarmChart(forecast) {
+    if (chartObjectInstance) {
+      chartObjectInstance.destroy();
     }
 
-    const ctx = document.getElementById('priceForecastChart').getContext('2d');
-    chartReferenceInstance = new Chart(ctx, {
+    const ctx = document.getElementById('mktChart').getContext('2d');
+    chartObjectInstance = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: ['Spot Price', 'Day 7', 'Day 14', 'Day 21', 'Day 30'],
+        labels: ['Spot', 'Day 7', 'Day 14', 'Day 21', 'Day 30'],
         datasets: [{
-          label: 'Market Forecast (₹)',
-          data: dataPoints,
-          borderColor: '#2d6a35',
-          backgroundColor: 'rgba(45,106,53,0.05)',
+          label: `MSP Index (₹/${forecast.unit || 'qt'})`,
+          data: [forecast.current_price, forecast['7day'], forecast['14day'], forecast['21day'], forecast['30day']],
+          borderColor: '#15803d', // Primary farm green
+          backgroundColor: 'rgba(21,128,61,0.04)', // Ultra subtle green tint
           borderWidth: 2.5,
-          pointBackgroundColor: '#1a3d1f',
+          tension: 0.4,
           pointRadius: 4,
-          tension: 0.35,
+          pointBackgroundColor: '#15803d',
           fill: true
         }]
       },
@@ -725,18 +715,26 @@
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 } } },
-          x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+          y: {
+            grid: { color: 'rgba(0,0,0,0.03)' }, // Invisible subtle grid
+            ticks: { font: { size: 10, weight: '700' }, color: '#6b7280' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 10 }, color: '#6b7280' }
+          }
         }
       }
     });
   }
 
-  function resetApplicationPipeline() {
+  function returnToScanScreen() {
+    imageBase64Payload = null;
     document.getElementById('imagePreview').style.display = 'none';
     document.getElementById('imagePreview').src = '';
-    document.getElementById('fileInput').value = '';
-    toggleScreenViewport('screen-upload');
+    document.getElementById('imgInput').value = '';
+    document.getElementById('uploadDropZone').style.display = 'block';
+    setUIVewport('screen-upload');
   }
 </script>
 </body>
